@@ -31,7 +31,8 @@ class SafeText {
       assert(false, "extraWords can't be null for usingDefaultWords = false");
     } else if (useDefaultWords == false && extraWords != null) {
       /// if excluded words and extrawords have something in common
-      if (excludedWords != null && _hasCommonString(excludedWords, extraWords)) {
+      if (excludedWords != null &&
+          _hasCommonString(excludedWords, extraWords)) {
         assert(false, "Can't have same words in excludedWords and extraWords");
       }
 
@@ -49,15 +50,15 @@ class SafeText {
       /// This will add all the extraWords
       if (extraWords != null) {
         /// if excluded words and extrawords have something in common
-        if (excludedWords != null && _hasCommonString(excludedWords, extraWords)) {
-          assert(false, "Can't have same words in excludedWords and extraWords");
+        if (excludedWords != null &&
+            _hasCommonString(excludedWords, extraWords)) {
+          assert(
+              false, "Can't have same words in excludedWords and extraWords");
         }
 
         /// will remove all the excluded words
         else if (excludedWords != null) {
-          allWords = [
-            ...badWords
-          ];
+          allWords = [...badWords];
           for (var word in excludedWords) {
             if (allWords.contains(word)) {
               allWords.remove(word);
@@ -75,9 +76,7 @@ class SafeText {
 
         /// will add extra words and badwords
         else {
-          allWords = [
-            ...badWords
-          ];
+          allWords = [...badWords];
 
           for (var word in extraWords) {
             if (word.split(" ").length > 1) {
@@ -89,9 +88,7 @@ class SafeText {
         }
       } else {
         if (excludedWords != null) {
-          allWords = [
-            ...badWords
-          ];
+          allWords = [...badWords];
           for (var word in excludedWords) {
             if (allWords.contains(word)) {
               allWords.remove(word);
@@ -106,11 +103,17 @@ class SafeText {
     for (var badWord in allWords) {
       if (text.toLowerCase().contains(badWord.toLowerCase())) {
         if (fullMode) {
-          text = text.replaceAll(RegExp(r'\b' + badWord + r'\b', caseSensitive: false), obscureSymbol * badWord.length);
+          text = text.replaceAll(
+              RegExp(r'\b' + badWord + r'\b', caseSensitive: false),
+              obscureSymbol * badWord.length);
         } else {
           if (badWord.length > 2) {
-            final replacement = badWord[0] + obscureSymbol * (badWord.length - 2) + badWord[badWord.length - 1];
-            text = text.replaceAll(RegExp(r'\b' + badWord + r'\b', caseSensitive: false), replacement);
+            final replacement = badWord[0] +
+                obscureSymbol * (badWord.length - 2) +
+                badWord[badWord.length - 1];
+            text = text.replaceAll(
+                RegExp(r'\b' + badWord + r'\b', caseSensitive: false),
+                replacement);
           }
         }
       }
