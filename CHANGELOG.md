@@ -13,3 +13,10 @@
 ### Added
 
 - Made some changes in documentation.
+-
+
+## 0.0.3
+
+### Added
+
+- Made some changes in formatting.
