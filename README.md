@@ -28,7 +28,7 @@ To use the `SafeText` class for filtering out bad words from your text inputs, f
 
    ```yaml
    dependencies:
-     bad_word_filter: ^1.0.0 # Replace with the latest version
+     safe_text: ^0.0.1 # Replace with the latest version
    ```
 
 2. Import the package in your Dart file:
