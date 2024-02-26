@@ -19,3 +19,12 @@ dev_dependencies:
 example: main.dart
 
 flutter:
+platforms:
+  android:
+  ios:
+  linux:
+  macos:
+  web:
+  windows:
+funding:
+  - https://www.buymeacoffee.com/ronitrameja
