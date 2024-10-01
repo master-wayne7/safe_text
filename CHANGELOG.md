@@ -20,3 +20,9 @@
 ### Added
 
 - Made some changes in formatting.
+- 
+## 0.0.4
+
+### Added
+
+- A method to check whether the given String contains any bad words or not. Process will run in new thread to avoid blocking of main thread. 

@@ -28,7 +28,7 @@ To use the `SafeText` class for filtering out bad words from your text inputs, f
 
    ```yaml
    dependencies:
-     safe_text: ^0.0.2 # Replace with the latest version
+     safe_text: ^0.0.4 # Replace with the latest version
    ```
 
 2. Import the package in your Dart file:
@@ -43,7 +43,7 @@ To use the `SafeText` class for filtering out bad words from your text inputs, f
    String filteredText = SafeText.filterText(
      text: "Your input text here",
      extraWords: ["extra", "bad", "words"],
-     excludedWords: ["exclude", "these", "words"],
+     excludedWords: ["exclude", "these"],
      useDefaultWords: true,
      fullMode: true,
      obscureSymbol: "*",
@@ -59,7 +59,28 @@ To use the `SafeText` class for filtering out bad words from your text inputs, f
    - `fullMode` (optional): Whether to fully filter out the bad word or only obscure the middle part, leaving the first and last characters visible (defaults to `true`).
    - `obscureSymbol` (optional): The symbol used to obscure the bad word (defaults to `*`).
 
-5. Enjoy a safer and more inclusive user experience by filtering out offensive language from your application's text inputs!
+5. Use the `containsBadWord` method to check if your text contains any bad words. This method runs in a separate thread to avoid blocking the main thread.
+
+   ```dart
+   // Example usage of containsBadWord
+   Future<void> checkTextForBadWords() async {
+     bool containsBadWord = await SafeText.containsBadWord(
+       text: "Your input text here",
+       extraWords: ["extra", "bad", "words"], // Optional
+       excludedWords: ["exclude", "these"], // Optional
+       useDefaultWords: true, // Defaults to true
+     );
+   
+     if (containsBadWord) {
+       print("The text contains inappropriate content.");
+     } else {
+       print("The text is clean.");
+     }
+   }
+   ```
+
+
+6. Enjoy a safer and more inclusive user experience by filtering out offensive language from your application's text inputs!
 
 ## Example
 
@@ -108,8 +129,7 @@ class _SafeTextDemoState extends State<SafeTextDemo> {
         ], // Additional bad words to filter
         excludedWords: [
           'exclude',
-          'these',
-          'words'
+          'these'
         ], // Words to be excluded from filtering
         useDefaultWords: true, // Whether to use the default list of bad words
         fullMode: true, // Whether to fully filter out the bad word or only obscure the middle part

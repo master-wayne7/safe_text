@@ -1,5 +1,6 @@
 library safe_text;
 
+import 'package:flutter/foundation.dart';
 import 'package:safe_text/constants/badwords.dart';
 
 /// A safe  text class to check if a string contains any bad  words or not.
@@ -128,5 +129,86 @@ class SafeText {
       }
     }
     return false; // No common string found
+  }
+
+  /// Method to detect if a string contains any bad words.
+  static Future<bool> containsBadWord({
+    /// Text for checking for profanity
+    required String text,
+
+    /// List of extra Bad Words that you want to filter out. Defaults to [badWords] constant list
+    List<String>? extraWords,
+
+    /// List of Bad Words that you don't want to filter out.
+    List<String>? excludedWords,
+
+    /// Whether you want to use the default words for filter or not. If set false it will only consider the [extraWords]. Defaults to true
+    bool useDefaultWords = true,
+  }) async {
+    // Running the check in a separate isolate (thread)
+    return await compute(_checkBadWords, {
+      'text': text,
+      'extraWords': extraWords,
+      'excludedWords': excludedWords,
+      'useDefaultWords': useDefaultWords
+    });
+  }
+
+  /// Helper method for checking bad words in a separate isolate
+  static bool _checkBadWords(Map<String, dynamic> args) {
+    String text = args['text'];
+    List<String>? extraWords = args['extraWords'];
+    List<String>? excludedWords = args['excludedWords'];
+    bool useDefaultWords = args['useDefaultWords'];
+
+    List<String> allWords = [];
+
+    if (useDefaultWords == false && extraWords == null) {
+      throw ArgumentError(
+          "extraWords can't be null for usingDefaultWords = false");
+    } else if (useDefaultWords == false && extraWords != null) {
+      if (excludedWords != null &&
+          _hasCommonString(excludedWords, extraWords)) {
+        throw ArgumentError(
+            "Can't have same words in excludedWords and extraWords");
+      } else {
+        allWords = [...extraWords];
+      }
+    } else {
+      if (extraWords != null) {
+        if (excludedWords != null &&
+            _hasCommonString(excludedWords, extraWords)) {
+          throw ArgumentError(
+              "Can't have same words in excludedWords and extraWords");
+        } else if (excludedWords != null) {
+          allWords = [...badWords];
+          for (var word in excludedWords) {
+            if (allWords.contains(word)) {
+              allWords.remove(word);
+            }
+          }
+          allWords.addAll(extraWords);
+        } else {
+          allWords = [...badWords, ...extraWords];
+        }
+      } else {
+        allWords = badWords;
+        if (excludedWords != null) {
+          for (var word in excludedWords) {
+            if (allWords.contains(word)) {
+              allWords.remove(word);
+            }
+          }
+        }
+      }
+    }
+
+    for (var badWord in allWords) {
+      if (text.toLowerCase().contains(badWord.toLowerCase())) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }
