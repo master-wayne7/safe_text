@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_interpolation_to_compose_strings
+
 library safe_text;
 
 import 'package:flutter/foundation.dart';
@@ -32,8 +34,7 @@ class SafeText {
       assert(false, "extraWords can't be null for usingDefaultWords = false");
     } else if (useDefaultWords == false && extraWords != null) {
       /// if excluded words and extrawords have something in common
-      if (excludedWords != null &&
-          _hasCommonString(excludedWords, extraWords)) {
+      if (excludedWords != null && _hasCommonString(excludedWords, extraWords)) {
         assert(false, "Can't have same words in excludedWords and extraWords");
       }
 
@@ -51,15 +52,15 @@ class SafeText {
       /// This will add all the extraWords
       if (extraWords != null) {
         /// if excluded words and extrawords have something in common
-        if (excludedWords != null &&
-            _hasCommonString(excludedWords, extraWords)) {
-          assert(
-              false, "Can't have same words in excludedWords and extraWords");
+        if (excludedWords != null && _hasCommonString(excludedWords, extraWords)) {
+          assert(false, "Can't have same words in excludedWords and extraWords");
         }
 
         /// will remove all the excluded words
         else if (excludedWords != null) {
-          allWords = [...badWords];
+          allWords = [
+            ...badWords
+          ];
           for (var word in excludedWords) {
             if (allWords.contains(word)) {
               allWords.remove(word);
@@ -77,7 +78,9 @@ class SafeText {
 
         /// will add extra words and badwords
         else {
-          allWords = [...badWords];
+          allWords = [
+            ...badWords
+          ];
 
           for (var word in extraWords) {
             if (word.split(" ").length > 1) {
@@ -89,7 +92,9 @@ class SafeText {
         }
       } else {
         if (excludedWords != null) {
-          allWords = [...badWords];
+          allWords = [
+            ...badWords
+          ];
           for (var word in excludedWords) {
             if (allWords.contains(word)) {
               allWords.remove(word);
@@ -104,17 +109,11 @@ class SafeText {
     for (var badWord in allWords) {
       if (text.toLowerCase().contains(badWord.toLowerCase())) {
         if (fullMode) {
-          text = text.replaceAll(
-              RegExp(r'\b' + badWord + r'\b', caseSensitive: false),
-              obscureSymbol * badWord.length);
+          text = text.replaceAll(RegExp(r'\b' + badWord + r'\b', caseSensitive: false), obscureSymbol * badWord.length);
         } else {
           if (badWord.length > 2) {
-            final replacement = badWord[0] +
-                obscureSymbol * (badWord.length - 2) +
-                badWord[badWord.length - 1];
-            text = text.replaceAll(
-                RegExp(r'\b' + badWord + r'\b', caseSensitive: false),
-                replacement);
+            final replacement = badWord[0] + obscureSymbol * (badWord.length - 2) + badWord[badWord.length - 1];
+            text = text.replaceAll(RegExp(r'\b' + badWord + r'\b', caseSensitive: false), replacement);
           }
         }
       }
@@ -164,24 +163,23 @@ class SafeText {
     List<String> allWords = [];
 
     if (useDefaultWords == false && extraWords == null) {
-      throw ArgumentError(
-          "extraWords can't be null for usingDefaultWords = false");
+      throw ArgumentError("extraWords can't be null for usingDefaultWords = false");
     } else if (useDefaultWords == false && extraWords != null) {
-      if (excludedWords != null &&
-          _hasCommonString(excludedWords, extraWords)) {
-        throw ArgumentError(
-            "Can't have same words in excludedWords and extraWords");
+      if (excludedWords != null && _hasCommonString(excludedWords, extraWords)) {
+        throw ArgumentError("Can't have same words in excludedWords and extraWords");
       } else {
-        allWords = [...extraWords];
+        allWords = [
+          ...extraWords
+        ];
       }
     } else {
       if (extraWords != null) {
-        if (excludedWords != null &&
-            _hasCommonString(excludedWords, extraWords)) {
-          throw ArgumentError(
-              "Can't have same words in excludedWords and extraWords");
+        if (excludedWords != null && _hasCommonString(excludedWords, extraWords)) {
+          throw ArgumentError("Can't have same words in excludedWords and extraWords");
         } else if (excludedWords != null) {
-          allWords = [...badWords];
+          allWords = [
+            ...badWords
+          ];
           for (var word in excludedWords) {
             if (allWords.contains(word)) {
               allWords.remove(word);
@@ -189,7 +187,10 @@ class SafeText {
           }
           allWords.addAll(extraWords);
         } else {
-          allWords = [...badWords, ...extraWords];
+          allWords = [
+            ...badWords,
+            ...extraWords
+          ];
         }
       } else {
         allWords = badWords;
@@ -210,5 +211,94 @@ class SafeText {
     }
 
     return false;
+  }
+
+  static final Map<String, String> numberWords = {
+    'zero': '0',
+    'one': '1',
+    'two': '2',
+    'three': '3',
+    'four': '4',
+    'five': '5',
+    'six': '6',
+    'seven': '7',
+    'eight': '8',
+    'nine': '9',
+  };
+
+  /// Detects if a given text contains a phone number in digits or words.
+  static bool containsPhoneNumber({
+    required String text,
+    int minLength = 7,
+    int maxLength = 15,
+  }) {
+    // Check for digit-based phone numbers
+    if (_containsDigitPhoneNumber(text, minLength, maxLength)) {
+      return true;
+    }
+
+    // Check for word-based phone numbers
+    if (_containsWordPhoneNumber(text, minLength, maxLength)) {
+      return true;
+    }
+
+    // Check for digit-based, word-based, or mixed phone numbers
+    if (_containsPhoneNumberInMixedFormat(text, minLength, maxLength)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /// Private method to check for phone numbers in mixed format (digits + words)
+  static bool _containsPhoneNumberInMixedFormat(String text, int minLength, int maxLength) {
+    // Normalize the text to lowercase
+    text = text.toLowerCase();
+
+    // Split the text into words
+    List<String> words = text.split(RegExp(r'\s+'));
+
+    // Create a buffer to store converted digits
+    StringBuffer phoneNumberBuffer = StringBuffer();
+
+    for (var word in words) {
+      // Check if the word is a digit or can be mapped from words to digits
+      if (numberWords.containsKey(word)) {
+        phoneNumberBuffer.write(numberWords[word]);
+      } else if (RegExp(r'\d').hasMatch(word)) {
+        // If the word contains digits, add them directly
+        phoneNumberBuffer.write(word.replaceAll(RegExp(r'\D'), ''));
+      }
+    }
+
+    // Extract the final phone number and check its length
+    String potentialPhoneNumber = phoneNumberBuffer.toString();
+    return potentialPhoneNumber.length >= minLength && potentialPhoneNumber.length <= maxLength;
+  }
+
+  /// Private method to check for digit-based phone numbers using regex
+  static bool _containsDigitPhoneNumber(String text, int minLength, int maxLength) {
+    // Regular expression to match phone numbers with a length between minLength and maxLength
+    final RegExp digitPhoneRegex = RegExp(r'\b\d{' + minLength.toString() + ',' + maxLength.toString() + r'}\b');
+    return digitPhoneRegex.hasMatch(text);
+  }
+
+  /// Private method to check for word-based phone numbers
+  static bool _containsWordPhoneNumber(String text, int minLength, int maxLength) {
+    // Normalize the text to lowercase
+    text = text.toLowerCase();
+
+    // Replace number words with digits
+    String normalizedText = text;
+    numberWords.forEach((word, digit) {
+      // Replace words with corresponding digits
+      normalizedText = normalizedText.replaceAll(RegExp(r'\b' + word + r'\b'), digit);
+    });
+
+    // Remove any non-digit characters (like spaces) from the normalized string
+    normalizedText = normalizedText.replaceAll(RegExp(r'[^0-9]'), '');
+
+    // Check if we now have a number with a length between minLength and maxLength
+    return normalizedText.length >= minLength && normalizedText.length <= maxLength;
   }
 }

@@ -1,6 +1,6 @@
-## 0.0.1
+## 1.0.0
 
-### Added
+### Published
 
 - Initial release of the BadWordFilter package.
 - Implemented the `SafeText` class with the `filterText` method for filtering out bad words from text inputs.
@@ -8,21 +8,27 @@
 - Included an example Flutter app demonstrating the usage of the BadWordFilter package.
 - Added a README.md file with instructions on getting started, usage, example, and author information.
 
-## 0.0.2
+## 1.0.1
 
 ### Added
 
 - Made some changes in documentation.
 -
 
-## 0.0.3
+## 1.0.2
 
 ### Added
 
 - Made some changes in formatting.
 - 
-## 0.0.4
+## 1.0.3
 
 ### Added
 
 - A method to check whether the given String contains any bad words or not. Process will run in new thread to avoid blocking of main thread. 
+- 
+## 1.0.4
+
+### Added
+
+- A method to check whether the given String contains any phone number or not both in words and digits and in mixed format also.

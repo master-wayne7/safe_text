@@ -28,7 +28,7 @@ To use the `SafeText` class for filtering out bad words from your text inputs, f
 
    ```yaml
    dependencies:
-     safe_text: ^0.0.4 # Replace with the latest version
+     safe_text: ^1.0.4 # Replace with the latest version
    ```
 
 2. Import the package in your Dart file:
@@ -79,8 +79,39 @@ To use the `SafeText` class for filtering out bad words from your text inputs, f
    }
    ```
 
+6. Use the `containsPhoneNumber` method to check if your text contains any phone number, whether it's in digits, words, or a mix of both. You can also specify the minimum and maximum length of the phone number.
 
-6. Enjoy a safer and more inclusive user experience by filtering out offensive language from your application's text inputs!
+   ```dart
+   // Example usage of containsPhoneNumber for mixed formats
+   void detectPhoneNumbers() {
+     String text1 = "Call me at 987 six 543210";
+     String text2 = "My number is nine eight seven six five four three two one zero";
+     String text3 = "Contact: 1234 five six seven eight nine";
+
+     bool containsPhone1 = SafeText.containsPhoneNumber(
+       text: text1,
+       minLength: 7, // Minimum length for a valid phone number
+       maxLength: 15, // Maximum length for a valid phone number
+     );
+
+     bool containsPhone2 = SafeText.containsPhoneNumber(
+       text: text2,
+       minLength: 7,
+       maxLength: 15,
+     );
+
+     bool containsPhone3 = SafeText.containsPhoneNumber(
+       text: text3,
+       minLength: 7,
+       maxLength: 15,
+     );
+
+     print(containsPhone1); // true, detects "9876543210"
+     print(containsPhone2); // true, detects "9876543210"
+     print(containsPhone3); // true, detects "123456789"
+   }
+
+7. Enjoy a safer and more inclusive user experience by filtering out offensive language from your application's text inputs!
 
 ## Example
 
