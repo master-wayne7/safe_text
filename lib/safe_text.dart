@@ -104,7 +104,9 @@ class SafeText {
     }
 
     for (var badWord in allWords) {
-      if (text.toLowerCase().contains(badWord.toLowerCase())) {
+      final badWordPattern =
+          RegExp(r'\b' + RegExp.escape(badWord) + r'\b', caseSensitive: false);
+      if (badWordPattern.hasMatch(text)) {
         if (fullMode) {
           text = text.replaceAll(
               RegExp(r'\b' + badWord + r'\b', caseSensitive: false),
@@ -206,7 +208,9 @@ class SafeText {
     }
 
     for (var badWord in allWords) {
-      if (text.toLowerCase().contains(badWord.toLowerCase())) {
+      final badWordPattern =
+          RegExp(r'\b' + RegExp.escape(badWord) + r'\b', caseSensitive: false);
+      if (badWordPattern.hasMatch(text)) {
         return true;
       }
     }

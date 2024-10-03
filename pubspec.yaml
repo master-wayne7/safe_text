@@ -1,6 +1,6 @@
 name: safe_text
 description: A Flutter package for filtering out bad words from text inputs.
-version: 1.0.5
+version: 1.0.6
 homepage: https://github.com/master-wayne7/safe_text
 
 environment:

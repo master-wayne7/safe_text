@@ -1,3 +1,9 @@
+## 1.0.6
+
+### Added
+
+- Fixed the filtering aur matching function.
+
 ## 1.0.5
 
 ### Added
