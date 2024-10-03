@@ -1,3 +1,9 @@
+## 1.0.7
+
+### Added
+
+- Fixed the time complexity of phone number detector.
+  
 ## 1.0.6
 
 ### Added
