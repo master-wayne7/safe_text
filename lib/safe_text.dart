@@ -252,16 +252,6 @@ class SafeText {
     int minLength = params['minLength'];
     int maxLength = params['maxLength'];
 
-    // Check for digit-based phone numbers
-    if (_containsDigitPhoneNumber(text, minLength, maxLength)) {
-      return true;
-    }
-
-    // Check for word-based phone numbers
-    if (_containsWordPhoneNumber(text, minLength, maxLength)) {
-      return true;
-    }
-
     // Check for mixed format phone numbers (digits + words)
     if (_containsPhoneNumberInMixedFormat(text, minLength, maxLength)) {
       return true;
@@ -270,30 +260,30 @@ class SafeText {
     return false;
   }
 
-  /// Private method to check for digit-based phone numbers using regex
-  static bool _containsDigitPhoneNumber(
-      String text, int minLength, int maxLength) {
-    final RegExp digitPhoneRegex = RegExp(
-        r'\b\d{' + minLength.toString() + ',' + maxLength.toString() + r'}\b');
-    return digitPhoneRegex.hasMatch(text);
-  }
+  // /// Private method to check for digit-based phone numbers using regex
+  // static bool _containsDigitPhoneNumber(
+  //     String text, int minLength, int maxLength) {
+  //   final RegExp digitPhoneRegex = RegExp(
+  //       r'\b\d{' + minLength.toString() + ',' + maxLength.toString() + r'}\b');
+  //   return digitPhoneRegex.hasMatch(text);
+  // }
 
-  /// Private method to check for word-based phone numbers
-  static bool _containsWordPhoneNumber(
-      String text, int minLength, int maxLength) {
-    text = text.toLowerCase();
-    String normalizedText = text;
+  // /// Private method to check for word-based phone numbers
+  // static bool _containsWordPhoneNumber(
+  //     String text, int minLength, int maxLength) {
+  //   text = text.toLowerCase();
+  //   String normalizedText = text;
 
-    numberWords.forEach((word, digit) {
-      normalizedText =
-          normalizedText.replaceAll(RegExp(r'\b' + word + r'\b'), digit);
-    });
+  //   numberWords.forEach((word, digit) {
+  //     normalizedText =
+  //         normalizedText.replaceAll(RegExp(r'\b' + word + r'\b'), digit);
+  //   });
 
-    normalizedText = normalizedText.replaceAll(RegExp(r'[^0-9]'), '');
+  //   normalizedText = normalizedText.replaceAll(RegExp(r'[^0-9]'), '');
 
-    return normalizedText.length >= minLength &&
-        normalizedText.length <= maxLength;
-  }
+  //   return normalizedText.length >= minLength &&
+  //       normalizedText.length <= maxLength;
+  // }
 
   /// Private method to check for phone numbers in mixed format (digits + words)
   static bool _containsPhoneNumberInMixedFormat(
