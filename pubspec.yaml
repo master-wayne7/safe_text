@@ -54,8 +54,6 @@ maintainers:
   - master-wayne7
   - TheKunal65
 
-publish_to: https://pub.dev
-
 support:
   - https://github.com/master-wayne7/safe_text/issues
   - https://github.com/master-wayne7/safe_text/discussions
