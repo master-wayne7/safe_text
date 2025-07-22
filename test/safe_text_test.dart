@@ -81,7 +81,7 @@ void main() {
       expect(noBadWord, false);
     });
   });
-  group('Ssfe text class method phone number detector ', () {
+  group('Safe text class method phone number detector ', () {
     test('will return invalid if there is phone number in text', () async {
       String textWithPhone = "Contact me at 9876543210";
       expect(
@@ -244,6 +244,33 @@ void main() {
           maxLength: 15,
         ),
         true,
+      );
+    });
+
+    test(
+        'will return invalid if phone number contains multiplier words like double and triple',
+        () async {
+      String phoneWithMultipliers = "My number is nine 7 eight 3 triple four";
+      expect(
+        await SafeText.containsPhoneNumber(
+          text: phoneWithMultipliers,
+          minLength: 7,
+          maxLength: 15,
+        ),
+        true,
+      );
+    });
+
+    test('will return valid if multiplier word without following number',
+        () async {
+      String textWithOnlyMultiplier = "I said double but no number after";
+      expect(
+        await SafeText.containsPhoneNumber(
+          text: textWithOnlyMultiplier,
+          minLength: 7,
+          maxLength: 15,
+        ),
+        false,
       );
     });
   });

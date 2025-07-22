@@ -11,24 +11,26 @@ and the Flutter guide for
 [developing packages and plugins](https://flutter.dev/developing-packages).
 -->
 
-Safe Text is a Flutter package designed to filter out offensive and abusive language from text inputs within your application. With its easy-to-use interface, you can integrate powerful profanity filtering capabilities to ensure a safer and more inclusive user experience. Simply integrate BadWordFilter into your Flutter project to automatically detect and replace inappropriate language with asterisks (\*) or customize it to suit your application's needs.
+Safe Text is a Flutter package designed to filter out offensive and abusive language from text inputs within your application. With its easy-to-use interface, you can integrate powerful profanity filtering capabilities to ensure a safer and more inclusive user experience. Simply integrate SafeText into your Flutter project to automatically detect and replace inappropriate language with asterisks (\*) or customize it to suit your application's needs. The package also includes advanced phone number detection that supports various formats.
 
 ## Features
 
 - **Profanity Filtering**: Automatically detects and filters out offensive language from text inputs.
+- **Advanced Phone Number Detection**: Detects phone numbers in various formats including digits, words, mixed formats, and multiplier words.
 - **Customizable**: Customize the filtering behavior and replacement characters to suit your application's requirements.
 - **Easy Integration**: Simple integration with Flutter projects, making it seamless to implement the profanity filtering functionality.
 - **Enhanced User Experience**: Promotes a safer and more inclusive user experience by removing inappropriate language from text inputs.
+- **Multi-threaded Processing**: Phone number detection runs in separate isolates to avoid blocking the main thread.
 
 ## Getting started
 
 To use the `SafeText` class for filtering out bad words from your text inputs, follow these steps:
 
-1. Add the BadWordFilter package to your `pubspec.yaml` file:
+1. Add the SafeText package to your `pubspec.yaml` file:
 
    ```yaml
    dependencies:
-     safe_text: ^1.0.7 # Replace with the latest version
+     safe_text: ^1.0.8 # Replace with the latest version
    ```
 
 2. Import the package in your Dart file:
@@ -79,14 +81,15 @@ To use the `SafeText` class for filtering out bad words from your text inputs, f
    }
    ```
 
-6. Use the `containsPhoneNumber` method to check if your text contains any phone number, whether it's in digits, words, or a mix of both. You can also specify the minimum and maximum length of the phone number.
+6. Use the `containsPhoneNumber` method to check if your text contains any phone number, whether it's in digits, words, mixed formats, or with multiplier words. You can also specify the minimum and maximum length of the phone number.
 
    ```dart
-   // Example usage of containsPhoneNumber for mixed formats
+   // Example usage of containsPhoneNumber for various formats
    void detectPhoneNumbers() {
      String text1 = "Call me at 987 six 543210";
      String text2 = "My number is nine eight seven six five four three two one zero";
      String text3 = "Contact: 1234 five six seven eight nine";
+     String text4 = "My number is nine 7 eight 3 triple four";
 
      bool containsPhone1 = SafeText.containsPhoneNumber(
        text: text1,
@@ -106,9 +109,16 @@ To use the `SafeText` class for filtering out bad words from your text inputs, f
        maxLength: 15,
      );
 
+     bool containsPhone4 = SafeText.containsPhoneNumber(
+       text: text4,
+       minLength: 7,
+       maxLength: 15,
+     );
+
      print(containsPhone1); // true, detects "9876543210"
      print(containsPhone2); // true, detects "9876543210"
      print(containsPhone3); // true, detects "123456789"
+     print(containsPhone4); // true, detects "9783444" (triple four → 444)
    }
 
 7. Enjoy a safer and more inclusive user experience by filtering out offensive language from your application's text inputs!
@@ -131,7 +141,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      title: 'BadWordFilter Demo',
+      title: 'SafeText Demo',
       home: SafeTextDemo(), // Set the home to SafeTextDemo widget
     );
   }
@@ -173,7 +183,7 @@ class _SafeTextDemoState extends State<SafeTextDemo> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('BadWordFilter Demo'),
+        title: const Text('SafeText Demo'),
       ),
       body: Center(
         child: Padding(

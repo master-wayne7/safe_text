@@ -1,7 +1,11 @@
 name: safe_text
-description: A Flutter package for filtering out bad words from text inputs.
-version: 1.0.7
+description: A Flutter package for filtering out bad words from text inputs and detecting phone numbers in various formats including multiplier words.
+version: 1.0.8
 homepage: https://github.com/master-wayne7/safe_text
+repository: https://github.com/master-wayne7/safe_text
+issue_tracker: https://github.com/master-wayne7/safe_text/issues
+documentation: https://github.com/master-wayne7/safe_text#readme
+changelog: https://github.com/master-wayne7/safe_text/blob/main/CHANGELOG.md
 
 environment:
   sdk: ">=3.3.0 <4.0.0"
@@ -28,3 +32,30 @@ platforms:
   windows:
 funding:
   - https://www.buymeacoffee.com/ronitrameja
+
+topics:
+  - text-processing
+  - profanity-filter
+  - phone-number-detection
+  - content-moderation
+  - flutter
+  - dart
+
+keywords:
+  - safe-text
+  - profanity-filter
+  - bad-words
+  - content-moderation
+  - phone-number
+  - text-filtering
+
+license: MIT
+maintainers:
+  - master-wayne7
+  - TheKunal65
+
+publish_to: https://pub.dev
+
+support:
+  - https://github.com/master-wayne7/safe_text/issues
+  - https://github.com/master-wayne7/safe_text/discussions

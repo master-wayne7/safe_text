@@ -1,3 +1,9 @@
+## 1.0.8
+
+### Added
+
+- Added support for detecting phone numbers with repeated digits using multiplier words (e.g., "double five" → "55", "triple four" → "444").
+
 ## 1.0.7
 
 ### Added
