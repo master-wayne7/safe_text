@@ -39,7 +39,6 @@ topics:
   - phone-number-detection
   - content-moderation
   - flutter
-  - dart
 
 keywords:
   - safe-text
@@ -47,7 +46,6 @@ keywords:
   - bad-words
   - content-moderation
   - phone-number
-  - text-filtering
 
 license: MIT
 maintainers:
