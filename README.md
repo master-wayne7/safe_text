@@ -1,231 +1,125 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+<p align="center">
+  <img src="https://raw.githubusercontent.com/master-wayne7/safe_text/refs/heads/master/assets/image/safeText.png" alt="SafeText Banner">
+</p>
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages).
+Safe Text is a high-performance Flutter package designed to filter out offensive language (profanity) and detect phone numbers. Version 2.0.0 introduces a state-of-the-art **Aho-Corasick** engine for near-instant filtering across multiple languages.
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages).
--->
-
-Safe Text is a Flutter package designed to filter out offensive and abusive language from text inputs within your application. With its easy-to-use interface, you can integrate powerful profanity filtering capabilities to ensure a safer and more inclusive user experience. Simply integrate SafeText into your Flutter project to automatically detect and replace inappropriate language with asterisks (\*) or customize it to suit your application's needs. The package also includes advanced phone number detection that supports various formats.
+## 🚀 What's New in 2.0.0
+- **Aho-Corasick Algorithm**: Near-instant multi-pattern search (`O(N)` complexity).
+- **Extreme Speed**: Up to 20x faster than legacy regex loops.
+- **Multilingual Excellence**: Support for 75+ languages using full human-readable names.
+- **Modular API**: Separate trackers for profanity (`SafeTextFilter`) and phone numbers (`PhoneNumberChecker`).
+- **Memory Efficient**: Single-pass string building using `StringBuffer`.
 
 ## Features
 
-- **Profanity Filtering**: Automatically detects and filters out offensive language from text inputs.
-- **Advanced Phone Number Detection**: Detects phone numbers in various formats including digits, words, mixed formats, and multiplier words.
-- **Customizable**: Customize the filtering behavior and replacement characters to suit your application's requirements.
-- **Easy Integration**: Simple integration with Flutter projects, making it seamless to implement the profanity filtering functionality.
-- **Enhanced User Experience**: Promotes a safer and more inclusive user experience by removing inappropriate language from text inputs.
-- **Multi-threaded Processing**: Phone number detection runs in separate isolates to avoid blocking the main thread.
+- **Blazing Fast Profanity Filtering**: Scans thousands of bad words in a single pass of the text.
+- **Advanced Normalization**: Catches common bypasses like `f@ck` or `b4dass` with zero overhead.
+- **Comprehensive Phone Detection**: Detects numbers in digits, words, mixed formats, and repeats (e.g., "triple five").
+- **Customizable**: Add your own extra words or exclude specific phrases.
+- **Non-blocking**: Phone detection and heavy filtering can run in separate isolates.
 
 ## Getting started
 
-To use the `SafeText` class for filtering out bad words from your text inputs, follow these steps:
+Add `safe_text` to your `pubspec.yaml`:
 
-1. Add the SafeText package to your `pubspec.yaml` file:
-
-   ```yaml
-   dependencies:
-     safe_text: ^1.0.8 # Replace with the latest version
-   ```
-
-2. Import the package in your Dart file:
-
-   ```dart
-   import 'package:safe_text/safe_text.dart';
-   ```
-
-3. Use the `filterText` method to filter out bad words from your text inputs. Here's an example of how to use it:
-
-   ```dart
-   String filteredText = SafeText.filterText(
-     text: "Your input text here",
-     extraWords: ["extra", "bad", "words"],
-     excludedWords: ["exclude", "these"],
-     useDefaultWords: true,
-     fullMode: true,
-     obscureSymbol: "*",
-   );
-   ```
-
-4. Parameters:
-
-   - `text` (required): The text to be filtered.
-   - `extraWords` (optional): List of extra bad words to filter out (defaults to the standard list of bad words).
-   - `excludedWords` (optional): List of bad words that should not be filtered out.
-   - `useDefaultWords` (optional): Whether to use the default list of bad words in addition to the extra words (defaults to `true`).
-   - `fullMode` (optional): Whether to fully filter out the bad word or only obscure the middle part, leaving the first and last characters visible (defaults to `true`).
-   - `obscureSymbol` (optional): The symbol used to obscure the bad word (defaults to `*`).
-
-5. Use the `containsBadWord` method to check if your text contains any bad words. This method runs in a separate thread to avoid blocking the main thread.
-
-   ```dart
-   // Example usage of containsBadWord
-   Future<void> checkTextForBadWords() async {
-     bool containsBadWord = await SafeText.containsBadWord(
-       text: "Your input text here",
-       extraWords: ["extra", "bad", "words"], // Optional
-       excludedWords: ["exclude", "these"], // Optional
-       useDefaultWords: true, // Defaults to true
-     );
-   
-     if (containsBadWord) {
-       print("The text contains inappropriate content.");
-     } else {
-       print("The text is clean.");
-     }
-   }
-   ```
-
-6. Use the `containsPhoneNumber` method to check if your text contains any phone number, whether it's in digits, words, mixed formats, or with multiplier words. You can also specify the minimum and maximum length of the phone number.
-
-   ```dart
-   // Example usage of containsPhoneNumber for various formats
-   void detectPhoneNumbers() {
-     String text1 = "Call me at 987 six 543210";
-     String text2 = "My number is nine eight seven six five four three two one zero";
-     String text3 = "Contact: 1234 five six seven eight nine";
-     String text4 = "My number is nine 7 eight 3 triple four";
-
-     bool containsPhone1 = SafeText.containsPhoneNumber(
-       text: text1,
-       minLength: 7, // Minimum length for a valid phone number
-       maxLength: 15, // Maximum length for a valid phone number
-     );
-
-     bool containsPhone2 = SafeText.containsPhoneNumber(
-       text: text2,
-       minLength: 7,
-       maxLength: 15,
-     );
-
-     bool containsPhone3 = SafeText.containsPhoneNumber(
-       text: text3,
-       minLength: 7,
-       maxLength: 15,
-     );
-
-     bool containsPhone4 = SafeText.containsPhoneNumber(
-       text: text4,
-       minLength: 7,
-       maxLength: 15,
-     );
-
-     print(containsPhone1); // true, detects "9876543210"
-     print(containsPhone2); // true, detects "9876543210"
-     print(containsPhone3); // true, detects "123456789"
-     print(containsPhone4); // true, detects "9783444" (triple four → 444)
-   }
-
-7. Enjoy a safer and more inclusive user experience by filtering out offensive language from your application's text inputs!
-
-## Example
-
-Check out the example below to see how to integrate the `SafeText` class into your Flutter app:
-
-```dart
-import 'package:flutter/material.dart';
-import 'package:safe_text/safe_text.dart'; // Import the safe_text package
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      title: 'SafeText Demo',
-      home: SafeTextDemo(), // Set the home to SafeTextDemo widget
-    );
-  }
-}
-
-class SafeTextDemo extends StatefulWidget {
-  const SafeTextDemo({super.key});
-
-  @override
-  State<SafeTextDemo> createState() => _SafeTextDemoState();
-}
-
-class _SafeTextDemoState extends State<SafeTextDemo> {
-  String _textInput = ''; // Variable to store user input text
-
-  // Method to filter out bad words from the user input
-  void _filterText() {
-    setState(() {
-      // Call the filterText method from the SafeText class
-      _textInput = SafeText.filterText(
-        text: _textInput, // Pass the user input text
-        extraWords: [
-          'extra',
-          'bad',
-          'words'
-        ], // Additional bad words to filter
-        excludedWords: [
-          'exclude',
-          'these'
-        ], // Words to be excluded from filtering
-        useDefaultWords: true, // Whether to use the default list of bad words
-        fullMode: true, // Whether to fully filter out the bad word or only obscure the middle part
-        obscureSymbol: '*', // Symbol used to obscure the bad word
-      );
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('SafeText Demo'),
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              TextField(
-                onChanged: (value) {
-                  setState(() {
-                    _textInput = value; // Update the user input text
-                  });
-                },
-                decoration: const InputDecoration(
-                  hintText: 'Enter your text here...', // Placeholder text for the TextField
-                ),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _filterText, // Call _filterText method when button is pressed
-                child: const Text('Filter Bad Words'), // Button text
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Filtered Text:', // Text to display above the filtered text
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text(_textInput), // Display the filtered text
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
+```yaml
+dependencies:
+  safe_text: ^2.0.0
 ```
 
-# Contributing
+### 1. Profanity Filtering (`SafeTextFilter`)
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+The new `SafeTextFilter` class is the high-performance replacement for the legacy `SafeText` logic.
 
-# Authors
+#### Initialization
+Initialize with your desired language (defaults to English) to build the search Trie:
 
-We are [Ronit Rameja](https://github.com/master-wayne7) and [Kunal Prajapat](https://github.com/TheKunal65), the developers behind this Flutter package. We're passionate about creating tools that make development easier and more enjoyable. If you have any questions, suggestions, or feedback, feel free to reach out. You can find us on LinkedIn [Ronit](https://www.linkedin.com/in/ronit-rameja-8a708b252/) and [Kunal](https://www.linkedin.com/in/kunal-prajapat-487079263/).
+```dart
+import 'package:safe_text/safe_text.dart';
+
+void main() async {
+  // Option 1: Initialize with a specific language
+  await SafeTextFilter.init(language: Language.english);
+
+  // Option 2: Initialize with a custom list of languages
+  await SafeTextFilter.init(languages: [Language.english, Language.hindi, Language.spanish]);
+
+  // Option 3: Initialize with ALL supported languages
+  await SafeTextFilter.init(language: Language.all);
+}
+```
+
+#### Filtering Text
+```dart
+String filtered = SafeTextFilter.filterText(
+  text: "Hello b4dass!",
+  extraWords: ["example"], // Optional
+  excludedWords: ["friend"], // Optional
+  useDefaultWords: true,
+  fullMode: true,
+  obscureSymbol: "*",
+);
+// Result: "Hello ******!"
+```
+
+#### Checking for Bad Words
+```dart
+bool hasBadWord = await SafeTextFilter.containsBadWord(
+  text: "Don't be a pendejo",
+);
+```
+
+### 2. Phone Number Detection (`PhoneNumberChecker`)
+
+```dart
+bool hasPhone = await PhoneNumberChecker.containsPhoneNumber(
+  text: "Call me at nine 7 eight 3 triple four",
+  minLength: 7,
+  maxLength: 15,
+);
+```
+
+### 3. Legacy Support (`SafeText`)
+The original `SafeText` class is still available but marked as **@Deprecated**. It internally redirects to the new modular classes. We recommend migrating to the new API for a better developer experience.
+
+## Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `text` | `String` | **Required** | The input string to process. |
+| `extraWords` | `List<String>?`| `null` | Add custom patterns to the filter list. |
+| `excludedWords`| `List<String>?`| `null` | Phrases that should NOT be filtered. |
+| `useDefaultWords`| `bool` | `true` | Include the built-in language patterns. |
+| `fullMode` | `bool` | `true` | `true`: `****`, `false`: `f**k`. |
+| `obscureSymbol`| `String` | `*` | Symbol used for obscuring. |
+
+## Why is v2.0.0 so fast?
+
+Legacy versions used a nested loop approach (for every bad word, run a regex). With 10,000+ words, this grew exponentially slow. 
+
+**Aho-Corasick** builds a Finite State Automaton (Trie) from the word list. The engine then scans your text **exactly once**, matching all possible patterns simultaneously in `O(N)` time where N is the length of your text.
+
+## Contributing
+
+Pull requests are welcome. For major changes, please open an issue first.
+
+## Data Source
+
+SafeText uses the comprehensive [List of Dirty, Naughty, Obscene, and Otherwise Bad Words](https://github.com/LDNOOBWV2/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words_V2) repository. This dataset includes:
+- **75+ Dialects/Languages**
+- **55,000+ curated words**
+
+We are grateful to the contributors of this dataset for providing a robust foundation for profanity filtering.
+
+## Authors
+
+<p align="center">
+  <a href="https://github.com/master-wayne7">
+    <img src="https://github.com/master-wayne7.png" width="100" height="100" style="border-radius:50%" alt="Ronit Rameja">
+    <br />
+    <sub><b>Ronit Rameja</b></sub>
+  </a>
+</p>
+
+Connect on LinkedIn: [Ronit Rameja](https://www.linkedin.com/in/ronit-rameja-8a708b252/)
