@@ -33,6 +33,7 @@ enum Language {
   italian,
   japanese,
   kabyle,
+  kannada,
   khmer,
   korean,
   latin,
@@ -182,6 +183,9 @@ extension LanguageExtension on Language {
       case 'kab':
       case 'kabyle':
         return Language.kabyle;
+      case 'kn':
+      case 'kannada':
+        return Language.kannada;
       case 'kh':
       case 'khmer':
         return Language.khmer;
@@ -349,6 +353,7 @@ extension LanguageExtension on Language {
       case Language.italian: return 'it';
       case Language.japanese: return 'ja';
       case Language.kabyle: return 'kab';
+      case Language.kannada: return 'kn';
       case Language.khmer: return 'kh';
       case Language.korean: return 'ko';
       case Language.latin: return 'la';
