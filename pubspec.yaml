@@ -1,6 +1,6 @@
 name: safe_text
 description: A Flutter package for filtering out bad words from text inputs and detecting phone numbers in various formats including multiplier words.
-version: 1.0.8
+version: 2.0.0
 homepage: https://github.com/master-wayne7/safe_text
 repository: https://github.com/master-wayne7/safe_text
 issue_tracker: https://github.com/master-wayne7/safe_text/issues
@@ -18,11 +18,14 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^6.0.0
 
 example: main.dart
 
 flutter:
+  assets:
+    - assets/data/
+
 platforms:
   android:
   ios:
@@ -50,7 +53,10 @@ keywords:
 license: MIT
 maintainers:
   - master-wayne7
-  - TheKunal65
+
+screenshots:
+  - description: 'SafeText 2.0 Banner'
+    path: assets/image/safeText.png
 
 support:
   - https://github.com/master-wayne7/safe_text/issues

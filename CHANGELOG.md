@@ -1,3 +1,16 @@
+## 2.0.0
+
+### Added
+- **Aho-Corasick Engine**: Replaced legacy regex loops with a high-performance Trie-based search engine for `O(N)` search complexity.
+- **Extreme Performance**: Up to 20x faster for large pattern sets and mixed language inputs.
+- **Flexible Initialization**: `SafeTextFilter.init` now supports either a single `language` or a list of `languages` for custom combinations.
+- **Multilingual Support**: Support for 75+ languages with full names (e.g., `Language.english`, `Language.hindi`).
+- **Modular API**: Separated functionality into `SafeTextFilter` for profanity and `PhoneNumberChecker` for phone detection.
+- **Single-Pass Replacement**: Optimized string building avoids multiple copies during filtering.
+
+### Deprecated
+- **SafeText Class**: The monolithic `SafeText` class is now deprecated. Use `SafeTextFilter` and `PhoneNumberChecker` directly for better performance and modularity.
+
 ## 1.0.8
 
 ### Added
