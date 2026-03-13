@@ -10,6 +10,11 @@ class SafeTextFilter {
   static AhoCorasick? _trie;
   static bool _isInitialized = false;
 
+  /// Matches any Unicode letter or digit (covers all scripts: Latin, Arabic,
+  /// Devanagari, CJK, Hangul, Cyrillic, Hebrew, Thai, etc.)
+  static final RegExp _unicodeLetterOrDigit =
+      RegExp(r'\p{L}|\p{N}', unicode: true);
+
   // Normalization map to catch leet-speak and common variations
   static final Map<int, int> _normalizationMap = {
     '@'.codeUnitAt(0): 'a'.codeUnitAt(0),
@@ -278,9 +283,7 @@ class SafeTextFilter {
   }
 
   static bool _isAlphanumeric(int charCode) {
-    return (charCode >= 48 && charCode <= 57) || // 0-9
-           (charCode >= 65 && charCode <= 90) || // A-Z
-           (charCode >= 97 && charCode <= 122);   // a-z
+    return _unicodeLetterOrDigit.hasMatch(String.fromCharCode(charCode));
   }
 }
 
