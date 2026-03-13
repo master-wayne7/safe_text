@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:safe_text/src/safe_text_filter.dart';
 import 'package:safe_text/src/models/language.dart';
@@ -62,13 +63,13 @@ void main() {
     });
 
     test('Czech neutral words are removed', () async {
-      print(
+      debugPrint(
           'DEBUG: badWords contains bodnutí: ${badWords.contains('bodnutí')}');
-      print('DEBUG: badWords length: ${badWords.length}');
+      debugPrint('DEBUG: badWords length: ${badWords.length}');
       await SafeTextFilter.init(languages: [Language.czech]);
       final isBad = await SafeTextFilter.containsBadWord(text: 'bodnutí');
       final filtered = SafeTextFilter.filterText(text: 'bodnutí');
-      print('DEBUG: Czech bodnutí: isBad=$isBad, filtered=$filtered');
+      debugPrint('DEBUG: Czech bodnutí: isBad=$isBad, filtered=$filtered');
       expect(isBad, false);
       expect(await SafeTextFilter.containsBadWord(text: 'děloha'), false);
       expect(await SafeTextFilter.containsBadWord(text: 'knoflík'), false);

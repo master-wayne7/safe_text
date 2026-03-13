@@ -59,7 +59,7 @@ class PhoneNumberChecker {
   static bool _containsPhoneNumberInMixedFormat(
       String text, int minLength, int maxLength) {
     text = text.toLowerCase();
-    
+
     // Instead of splitting by regex `\s+` which is slower, we use standard split and trim
     // Or we simply iterate through the string.
     List<String> words = text.split(RegExp(r'\s+'));
@@ -90,7 +90,7 @@ class PhoneNumberChecker {
             int multiplier = multiplierWords[word]!;
             // Repeat the digit 'multiplier' times
             for (int k = 0; k < multiplier; k++) {
-                phoneNumberBuffer.write(digitToRepeat);
+              phoneNumberBuffer.write(digitToRepeat);
             }
           }
         }

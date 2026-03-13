@@ -37,20 +37,22 @@ class SafeTextFilter {
   /// You can provide a single [language] or a list of [languages].
   /// If [languages] is provided, it takes precedence over [language].
   /// Defaults to [Language.english] if both are null.
-  static Future<void> init({Language? language, List<Language>? languages}) async {
+  static Future<void> init(
+      {Language? language, List<Language>? languages}) async {
     final words = await _loadWords(language: language, languages: languages);
-    
+
     // Building the Trie locally is fast and avoids serialization overhead
     _trie = AhoCorasick();
     for (var word in words) {
-        _trie!.addWord(word);
+      _trie!.addWord(word);
     }
     _trie!.buildFailureLinks();
-    
+
     _isInitialized = true;
   }
 
-  static Future<List<String>> _loadWords({Language? language, List<Language>? languages}) async {
+  static Future<List<String>> _loadWords(
+      {Language? language, List<Language>? languages}) async {
     List<String> words = [];
     final List<Language> targetLanguages = [];
 
@@ -67,28 +69,32 @@ class SafeTextFilter {
 
     List<Future<String>> futures = [];
     for (var l in targetLanguages) {
-      futures.add(_safeLoadAsset('packages/safe_text/assets/data/${l.fileCode}.txt'));
+      futures.add(
+          _safeLoadAsset('packages/safe_text/assets/data/${l.fileCode}.txt'));
     }
 
     final results = await Future.wait(futures);
     for (var content in results) {
       if (content.isNotEmpty) {
-        words.addAll(content.split('\n').map((e) => e.trim()).where((e) => e.isNotEmpty));
+        words.addAll(content
+            .split('\n')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty));
       }
     }
-    
+
     if (words.isEmpty) {
-        words.addAll(badWords);
+      words.addAll(badWords);
     }
     return words.toSet().toList();
   }
 
   static Future<String> _safeLoadAsset(String path) async {
-      try {
-          return await rootBundle.loadString(path);
-      } catch (e) {
-         return '';
-      }
+    try {
+      return await rootBundle.loadString(path);
+    } catch (e) {
+      return '';
+    }
   }
 
   /// Normalizes text by replacing leet-speak with standard alphabets.
@@ -96,10 +102,10 @@ class SafeTextFilter {
     if (text.isEmpty) return text;
     final units = List<int>.from(text.toLowerCase().codeUnits);
     for (int i = 0; i < units.length; i++) {
-        final replacement = _normalizationMap[units[i]];
-        if (replacement != null) {
-            units[i] = replacement;
-        }
+      final replacement = _normalizationMap[units[i]];
+      if (replacement != null) {
+        units[i] = replacement;
+      }
     }
     return String.fromCharCodes(units);
   }
@@ -112,49 +118,50 @@ class SafeTextFilter {
     bool useDefaultWords = true,
   }) async {
     if (text.isEmpty) return false;
-    
+
     final normalized = normalizeText(text);
 
     // Optimized sync check if initialized
     if (_isInitialized && useDefaultWords) {
-        final matches = _trie!.search(normalized);
-        for (final entry in matches.entries) {
-            final endIndex = entry.key;
-            for (final word in entry.value) {
-                if (excludedWords != null && excludedWords.contains(word)) continue;
-                if (_isWordBoundary(normalized, endIndex - word.length + 1, endIndex + 1)) {
-                    return true;
-                }
-            }
+      final matches = _trie!.search(normalized);
+      for (final entry in matches.entries) {
+        final endIndex = entry.key;
+        for (final word in entry.value) {
+          if (excludedWords != null && excludedWords.contains(word)) continue;
+          if (_isWordBoundary(
+              normalized, endIndex - word.length + 1, endIndex + 1)) {
+            return true;
+          }
         }
+      }
     } else if (useDefaultWords) {
-        // Fallback or legacy path
-        for (final word in badWords) {
-            if (excludedWords != null && excludedWords.contains(word)) continue;
-            if (_hasMatch(normalized, word)) return true;
-        }
+      // Fallback or legacy path
+      for (final word in badWords) {
+        if (excludedWords != null && excludedWords.contains(word)) continue;
+        if (_hasMatch(normalized, word)) return true;
+      }
     }
 
     if (extraWords != null) {
-        for (final word in extraWords) {
-            if (excludedWords != null && excludedWords.contains(word)) continue;
-            if (_hasMatch(normalized, word)) return true;
-        }
+      for (final word in extraWords) {
+        if (excludedWords != null && excludedWords.contains(word)) continue;
+        if (_hasMatch(normalized, word)) return true;
+      }
     }
 
     return false;
   }
 
   static bool _hasMatch(String normalizedText, String word) {
-      final wordLower = word.toLowerCase();
-      int index = normalizedText.indexOf(wordLower);
-      while (index != -1) {
-          if (_isWordBoundary(normalizedText, index, index + wordLower.length)) {
-              return true;
-          }
-          index = normalizedText.indexOf(wordLower, index + 1);
+    final wordLower = word.toLowerCase();
+    int index = normalizedText.indexOf(wordLower);
+    while (index != -1) {
+      if (_isWordBoundary(normalizedText, index, index + wordLower.length)) {
+        return true;
       }
-      return false;
+      index = normalizedText.indexOf(wordLower, index + 1);
+    }
+    return false;
   }
 
   /// This method will filter out the bad words from your provided [string].
@@ -173,7 +180,8 @@ class SafeTextFilter {
     if (extraWords != null && excludedWords != null) {
       for (final word in extraWords) {
         if (excludedWords.contains(word)) {
-          assert(false, "Can't have same words in excludedWords and extraWords");
+          assert(
+              false, "Can't have same words in excludedWords and extraWords");
         }
       }
     }
@@ -258,16 +266,17 @@ class SafeTextFilter {
     return buffer.toString();
   }
 
-  static void _addMatchesForWord(String normalizedText, String word, List<_Range> matches) {
-      final wordLower = word.toLowerCase();
-      int index = normalizedText.indexOf(wordLower);
-      while (index != -1) {
-          final endIndex = index + wordLower.length;
-          if (_isWordBoundary(normalizedText, index, endIndex)) {
-              matches.add(_Range(index, endIndex));
-          }
-          index = normalizedText.indexOf(wordLower, index + 1);
+  static void _addMatchesForWord(
+      String normalizedText, String word, List<_Range> matches) {
+    final wordLower = word.toLowerCase();
+    int index = normalizedText.indexOf(wordLower);
+    while (index != -1) {
+      final endIndex = index + wordLower.length;
+      if (_isWordBoundary(normalizedText, index, endIndex)) {
+        matches.add(_Range(index, endIndex));
       }
+      index = normalizedText.indexOf(wordLower, index + 1);
+    }
   }
 
   static bool _isWordBoundary(String text, int start, int end) {

@@ -319,83 +319,160 @@ extension LanguageExtension on Language {
 
   String get fileCode {
     switch (this) {
-      case Language.afrikaans: return 'af';
-      case Language.amharic: return 'am';
-      case Language.arabic: return 'ar';
-      case Language.azerbaijani: return 'az';
-      case Language.belarusian: return 'be';
-      case Language.bulgarian: return 'bg';
-      case Language.catalan: return 'ca';
-      case Language.cebuano: return 'ceb';
-      case Language.czech: return 'cs';
-      case Language.welsh: return 'cy';
-      case Language.danish: return 'da';
-      case Language.german: return 'de';
-      case Language.dzongkha: return 'dz';
-      case Language.greek: return 'el';
-      case Language.english: return 'en';
-      case Language.esperanto: return 'eo';
-      case Language.spanish: return 'es';
-      case Language.estonian: return 'et';
-      case Language.basque: return 'eu';
-      case Language.persian: return 'fa';
-      case Language.finnish: return 'fi';
-      case Language.filipino: return 'fil';
-      case Language.french: return 'fr';
-      case Language.scottishGaelic: return 'gd';
-      case Language.galician: return 'gl';
-      case Language.hindi: return 'hi';
-      case Language.croatian: return 'hr';
-      case Language.hungarian: return 'hu';
-      case Language.armenian: return 'hy';
-      case Language.indonesian: return 'id';
-      case Language.icelandic: return 'is';
-      case Language.italian: return 'it';
-      case Language.japanese: return 'ja';
-      case Language.kabyle: return 'kab';
-      case Language.kannada: return 'kn';
-      case Language.khmer: return 'kh';
-      case Language.korean: return 'ko';
-      case Language.latin: return 'la';
-      case Language.lithuanian: return 'lt';
-      case Language.latvian: return 'lv';
-      case Language.maori: return 'mi';
-      case Language.macedonian: return 'mk';
-      case Language.malayalam: return 'ml';
-      case Language.mongolian: return 'mn';
-      case Language.marathi: return 'mr';
-      case Language.malay: return 'ms';
-      case Language.maltese: return 'mt';
-      case Language.burmese: return 'my';
-      case Language.dutch: return 'nl';
-      case Language.norwegian: return 'no';
-      case Language.norfuk: return 'pih';
-      case Language.piapoco: return 'piy';
-      case Language.polish: return 'pl';
-      case Language.portuguese: return 'pt';
-      case Language.romanian: return 'ro';
-      case Language.kriol: return 'rop';
-      case Language.russian: return 'ru';
-      case Language.slovak: return 'sk';
-      case Language.slovenian: return 'sl';
-      case Language.samoan: return 'sm';
-      case Language.albanian: return 'sq';
-      case Language.serbian: return 'sr';
-      case Language.swedish: return 'sv';
-      case Language.tamil: return 'ta';
-      case Language.telugu: return 'te';
-      case Language.tetum: return 'tet';
-      case Language.thai: return 'th';
-      case Language.klingon: return 'tlh';
-      case Language.tongan: return 'to';
-      case Language.turkish: return 'tr';
-      case Language.ukrainian: return 'uk';
-      case Language.uzbek: return 'uz';
-      case Language.vietnamese: return 'vi';
-      case Language.yiddish: return 'yid';
-      case Language.chinese: return 'zh';
-      case Language.zulu: return 'zu';
-      case Language.all: return '';
+      case Language.afrikaans:
+        return 'af';
+      case Language.amharic:
+        return 'am';
+      case Language.arabic:
+        return 'ar';
+      case Language.azerbaijani:
+        return 'az';
+      case Language.belarusian:
+        return 'be';
+      case Language.bulgarian:
+        return 'bg';
+      case Language.catalan:
+        return 'ca';
+      case Language.cebuano:
+        return 'ceb';
+      case Language.czech:
+        return 'cs';
+      case Language.welsh:
+        return 'cy';
+      case Language.danish:
+        return 'da';
+      case Language.german:
+        return 'de';
+      case Language.dzongkha:
+        return 'dz';
+      case Language.greek:
+        return 'el';
+      case Language.english:
+        return 'en';
+      case Language.esperanto:
+        return 'eo';
+      case Language.spanish:
+        return 'es';
+      case Language.estonian:
+        return 'et';
+      case Language.basque:
+        return 'eu';
+      case Language.persian:
+        return 'fa';
+      case Language.finnish:
+        return 'fi';
+      case Language.filipino:
+        return 'fil';
+      case Language.french:
+        return 'fr';
+      case Language.scottishGaelic:
+        return 'gd';
+      case Language.galician:
+        return 'gl';
+      case Language.hindi:
+        return 'hi';
+      case Language.croatian:
+        return 'hr';
+      case Language.hungarian:
+        return 'hu';
+      case Language.armenian:
+        return 'hy';
+      case Language.indonesian:
+        return 'id';
+      case Language.icelandic:
+        return 'is';
+      case Language.italian:
+        return 'it';
+      case Language.japanese:
+        return 'ja';
+      case Language.kabyle:
+        return 'kab';
+      case Language.kannada:
+        return 'kn';
+      case Language.khmer:
+        return 'kh';
+      case Language.korean:
+        return 'ko';
+      case Language.latin:
+        return 'la';
+      case Language.lithuanian:
+        return 'lt';
+      case Language.latvian:
+        return 'lv';
+      case Language.maori:
+        return 'mi';
+      case Language.macedonian:
+        return 'mk';
+      case Language.malayalam:
+        return 'ml';
+      case Language.mongolian:
+        return 'mn';
+      case Language.marathi:
+        return 'mr';
+      case Language.malay:
+        return 'ms';
+      case Language.maltese:
+        return 'mt';
+      case Language.burmese:
+        return 'my';
+      case Language.dutch:
+        return 'nl';
+      case Language.norwegian:
+        return 'no';
+      case Language.norfuk:
+        return 'pih';
+      case Language.piapoco:
+        return 'piy';
+      case Language.polish:
+        return 'pl';
+      case Language.portuguese:
+        return 'pt';
+      case Language.romanian:
+        return 'ro';
+      case Language.kriol:
+        return 'rop';
+      case Language.russian:
+        return 'ru';
+      case Language.slovak:
+        return 'sk';
+      case Language.slovenian:
+        return 'sl';
+      case Language.samoan:
+        return 'sm';
+      case Language.albanian:
+        return 'sq';
+      case Language.serbian:
+        return 'sr';
+      case Language.swedish:
+        return 'sv';
+      case Language.tamil:
+        return 'ta';
+      case Language.telugu:
+        return 'te';
+      case Language.tetum:
+        return 'tet';
+      case Language.thai:
+        return 'th';
+      case Language.klingon:
+        return 'tlh';
+      case Language.tongan:
+        return 'to';
+      case Language.turkish:
+        return 'tr';
+      case Language.ukrainian:
+        return 'uk';
+      case Language.uzbek:
+        return 'uz';
+      case Language.vietnamese:
+        return 'vi';
+      case Language.yiddish:
+        return 'yid';
+      case Language.chinese:
+        return 'zh';
+      case Language.zulu:
+        return 'zu';
+      case Language.all:
+        return '';
     }
   }
 }

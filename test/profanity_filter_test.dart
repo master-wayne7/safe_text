@@ -116,7 +116,7 @@ void main() {
       // Verify it still works correctly
       final text = "This is badass and kutta behavior";
       final filtered = SafeTextFilter.filterText(text: text);
-      
+
       expect(filtered, contains("******"));
       expect(filtered, contains("*****"));
     });

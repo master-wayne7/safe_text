@@ -1,5 +1,3 @@
-library safe_text;
-
 export 'src/models/language.dart';
 export 'src/safe_text_filter.dart';
 export 'src/phone_number_checker.dart';
@@ -8,7 +6,8 @@ export 'src/phone_number_checker.dart';
 import 'src/safe_text_filter.dart';
 import 'src/phone_number_checker.dart';
 
-@Deprecated('Use SafeTextFilter and PhoneNumberChecker directly for better modularity and high performance.')
+@Deprecated(
+    'Use SafeTextFilter and PhoneNumberChecker directly for better modularity and high performance.')
 class SafeText {
   @Deprecated('Use SafeTextFilter.filterText instead.')
   static String filterText({
