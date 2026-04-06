@@ -1,0 +1,15 @@
+name: Publish to pub.dev
+
+# Step 2: Triggered by the tag created in release.yml.
+# At this point GitHub mints an OIDC token with refType=tag, which pub.dev requires.
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    permissions:
+      id-token: write
+
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
