@@ -188,7 +188,7 @@ String custom = SafeTextFilter.filterText(
 | `extraWords` | `List<String>?` | `null` | Additional words to filter on top of (or instead of) the built-in list. |
 | `excludedWords` | `List<String>?` | `null` | Words that must never be filtered, even if they appear in the list. |
 | `useDefaultWords` | `bool` | `true` | Include the built-in language word list. Set to `false` to use only `extraWords`. |
-| `strategy` | `MaskStrategy?` | `MaskStrategy.full()` | Masking strategy. See [Masking Strategies](#masking-strategies) below. |
+| `strategy` | `MaskStrategy?` | `null` (defaults to `MaskStrategy.full()`) | Masking strategy. See [Masking Strategies](#masking-strategies) below. |
 | `fullMode` | `bool` | `true` | **Deprecated.** Use `strategy` instead. `true` maps to `MaskStrategy.full()`, `false` maps to `MaskStrategy.partial()`. |
 | `obscureSymbol` | `String` | `*` | **Deprecated.** Pass `obscureSymbol` via `MaskStrategy.full()` or `MaskStrategy.partial()` instead. |
 

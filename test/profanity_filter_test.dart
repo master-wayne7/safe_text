@@ -1,8 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/foundation.dart';
-import 'package:safe_text/src/safe_text_filter.dart';
-import 'package:safe_text/src/models/language.dart';
-import 'package:safe_text/src/models/mask_strategy.dart';
+import 'package:safe_text/safe_text.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -150,6 +148,26 @@ void main() {
               text: "Hello badass",
               strategy: const MaskStrategy.custom()),
           "Hello [censored]");
+    });
+
+    test('MaskStrategy.partial() on 2 letter word keeps first only', () {
+      expect(
+          SafeTextFilter.filterText(
+              text: "Hello ox end",
+              useDefaultWords: false,
+              extraWords: ['ox'],
+              strategy: const MaskStrategy.partial()),
+          "Hello o* end");
+    });
+
+    test('MaskStrategy.partial() on 1 letter word fully masks', () {
+      expect(
+          SafeTextFilter.filterText(
+              text: "Hello x end",
+              useDefaultWords: false,
+              extraWords: ['x'],
+              strategy: const MaskStrategy.partial()),
+          "Hello * end");
     });
 
     test("MaskStrategy.custom(replacement: '***') uses provided replacement", () {

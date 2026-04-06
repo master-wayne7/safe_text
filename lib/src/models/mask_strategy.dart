@@ -21,10 +21,12 @@ sealed class MaskStrategy {
 
   /// Keeps the first character visible and masks the rest. For words with
   /// 4 or more characters, also keeps the last character visible.
+  /// Single-character matches are fully replaced with the obscure symbol.
   ///
   /// Examples:
   /// - `"damn"` → `"d**n"` (4+ letters: first & last visible)
   /// - `"ass"` → `"a**"` (2–3 letters: first visible only)
+  /// - `"x"` → `"*"` (1 letter: fully masked)
   const factory MaskStrategy.partial({String obscureSymbol}) = PartialMask;
 
   /// Replaces the entire matched word with [replacement].
