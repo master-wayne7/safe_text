@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/foundation.dart';
 import 'package:safe_text/src/safe_text_filter.dart';
 import 'package:safe_text/src/models/language.dart';
+import 'package:safe_text/src/models/mask_strategy.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -105,6 +106,76 @@ void main() {
 
       expect(containsCustomBadWord, true);
       expect(noBadWord, false);
+    });
+  });
+
+  group("MaskStrategy", () {
+    test('MaskStrategy.full() produces full masking (same as default)', () {
+      expect(
+          SafeTextFilter.filterText(
+              text: "Hello badass",
+              strategy: const MaskStrategy.full()),
+          "Hello ******");
+    });
+
+    test("MaskStrategy.full(obscureSymbol: '#') masks with '#'", () {
+      expect(
+          SafeTextFilter.filterText(
+              text: "Hello badass",
+              strategy: const MaskStrategy.full(obscureSymbol: '#')),
+          "Hello ######");
+    });
+
+    test('MaskStrategy.partial() on 4+ letter word keeps first and last', () {
+      expect(
+          SafeTextFilter.filterText(
+              text: "Hello badass",
+              strategy: const MaskStrategy.partial()),
+          "Hello b****s");
+    });
+
+    test('MaskStrategy.partial() on 3 letter word keeps first only', () {
+      expect(
+          SafeTextFilter.filterText(
+              text: "Hello ass end",
+              useDefaultWords: false,
+              extraWords: ['ass'],
+              strategy: const MaskStrategy.partial()),
+          "Hello a** end");
+    });
+
+    test("MaskStrategy.custom() defaults to '[censored]'", () {
+      expect(
+          SafeTextFilter.filterText(
+              text: "Hello badass",
+              strategy: const MaskStrategy.custom()),
+          "Hello [censored]");
+    });
+
+    test("MaskStrategy.custom(replacement: '***') uses provided replacement", () {
+      expect(
+          SafeTextFilter.filterText(
+              text: "Hello badass",
+              strategy: const MaskStrategy.custom(replacement: '***')),
+          "Hello ***");
+    });
+
+    test('backward compat: fullMode: true still produces full masking', () {
+      // ignore: deprecated_member_use
+      expect(
+          SafeTextFilter.filterText(
+              text: "Hello badass how you doing anal impaler",
+              fullMode: true),
+          "Hello ****** how you doing ************");
+    });
+
+    test('backward compat: fullMode: false still produces partial masking', () {
+      // ignore: deprecated_member_use
+      expect(
+          SafeTextFilter.filterText(
+              text: "Hello badass how you doing anal impaler",
+              fullMode: false),
+          "Hello b****s how you doing a**********r");
     });
   });
 
