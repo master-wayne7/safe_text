@@ -1,3 +1,9 @@
+## 2.0.1
+
+### Documentation
+- Rewrote README with pub.dev badges, full API reference tables, supported languages list, migration guide from v1.x, How it Works section, and Limitations section.
+- Fixed CHANGELOG entries for 1.0.5–1.0.7: corrected `Added` category to `Fixed`/`Changed` for bug fix and refactor entries.
+
 ## 2.0.0
 
 ### Added
@@ -19,21 +25,21 @@
 
 ## 1.0.7
 
-### Added
+### Fixed
 
-- Fixed the time complexity of phone number detector.
-  
+- Improved time complexity of the phone number detector.
+
 ## 1.0.6
 
-### Added
+### Fixed
 
-- Fixed the filtering aur matching function.
+- Fixed the filtering and matching function.
 
 ## 1.0.5
 
-### Added
+### Changed
 
-- Moved the phone number checker in an isolate to aboid blocking of main thread.
+- Moved the phone number checker into an isolate to avoid blocking the main thread.
 
 
 ## 1.0.4

@@ -2,115 +2,386 @@
   <img src="https://raw.githubusercontent.com/master-wayne7/safe_text/refs/heads/main/assets/image/safeText.png" alt="SafeText Banner">
 </p>
 
-Safe Text is a high-performance Flutter package designed to filter out offensive language (profanity) and detect phone numbers. Version 2.0.0 introduces a state-of-the-art **Aho-Corasick** engine for near-instant filtering across multiple languages.
+<p align="center">
+  <a href="https://pub.dev/packages/safe_text"><img src="https://img.shields.io/pub/v/safe_text.svg" alt="pub version"></a>
+  <a href="https://pub.dev/packages/safe_text"><img src="https://img.shields.io/pub/likes/safe_text?logo=flutter" alt="pub likes"></a>
+  <a href="https://pub.dev/packages/safe_text/score"><img src="https://img.shields.io/pub/points/safe_text?logo=flutter" alt="pub points"></a>
+  <a href="https://github.com/master-wayne7/safe_text/actions"><img src="https://github.com/master-wayne7/safe_text/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
+</p>
 
-## 🚀 What's New in 2.0.0
-- **Aho-Corasick Algorithm**: Near-instant multi-pattern search (`O(N)` complexity).
-- **Extreme Speed**: Up to 20x faster than legacy regex loops.
-- **Multilingual Excellence**: Support for 75+ languages using full human-readable names.
-- **Modular API**: Separate trackers for profanity (`SafeTextFilter`) and phone numbers (`PhoneNumberChecker`).
-- **Memory Efficient**: Single-pass string building using `StringBuffer`.
+<p align="center">
+  <a href="https://pub.dev/packages/safe_text"><img src="https://img.shields.io/badge/platform-android%20%7C%20ios%20%7C%20web%20%7C%20macos%20%7C%20linux%20%7C%20windows-lightgrey" alt="platforms"></a>
+</p>
+
+A high-performance Flutter package for filtering offensive language (profanity) and detecting phone numbers. Powered by the **Aho-Corasick** algorithm for `O(N)` single-pass scanning across 75+ languages and 55,000+ curated words.
+
+---
+
+## Table of Contents
+
+- [Table of Contents](#table-of-contents)
+- [What's New in 2.0.0](#whats-new-in-200)
+- [Features](#features)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [API Reference](#api-reference)
+  - [`SafeTextFilter.init`](#safetextfilterinit)
+  - [`SafeTextFilter.filterText`](#safetextfilterfiltertext)
+  - [`SafeTextFilter.containsBadWord`](#safetextfiltercontainsbadword)
+  - [`PhoneNumberChecker.containsPhoneNumber`](#phonenumbercheckercontainsphonenumber)
+- [Supported Languages](#supported-languages)
+- [How it Works](#how-it-works)
+- [Migrating from v1.x](#migrating-from-v1x)
+- [Limitations](#limitations)
+- [Contributing](#contributing)
+- [Data Source](#data-source)
+- [Authors](#authors)
+
+---
+
+## What's New in 2.0.0
+
+- **Aho-Corasick Algorithm** — Near-instant multi-pattern search in `O(N)` complexity.
+- **Up to 20x faster** than the legacy regex-loop approach.
+- **75+ languages** — Full human-readable enum names (e.g., `Language.hindi`, `Language.spanish`).
+- **Modular API** — `SafeTextFilter` for profanity, `PhoneNumberChecker` for phone numbers.
+- **Memory efficient** — Single-pass string building via `StringBuffer`.
+- **Leet-speak normalization** — Catches bypasses like `f@ck` or `b4d` with zero extra overhead.
+
+---
 
 ## Features
 
-- **Blazing Fast Profanity Filtering**: Scans thousands of bad words in a single pass of the text.
-- **Advanced Normalization**: Catches common bypasses like `f@ck` or `b4dass` with zero overhead.
-- **Comprehensive Phone Detection**: Detects numbers in digits, words, mixed formats, and repeats (e.g., "triple five").
-- **Customizable**: Add your own extra words or exclude specific phrases.
-- **Non-blocking**: Phone detection and heavy filtering can run in separate isolates.
+- Scans thousands of bad words in a single pass of the input text.
+- Catches common character substitutions: `@→a`, `4→a`, `3→e`, `0→o`, `$→s`, and more.
+- Detects phone numbers in digits, words, mixed formats, and multiplier words (e.g., "triple five").
+- Customizable — add your own words or exclude specific phrases.
+- Non-blocking — `PhoneNumberChecker` runs in a separate isolate via `compute`.
+- Works on Android, iOS, Web, macOS, Linux, and Windows.
 
-## Getting started
+---
 
-Add `safe_text` to your `pubspec.yaml`:
+## Installation
+
+Add `safe_text` to your project using the Flutter CLI:
+
+```bash
+flutter pub add safe_text
+```
+
+Or manually add it to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  safe_text: ^2.0.0
+  safe_text: ^2.0.1
 ```
 
-### 1. Profanity Filtering (`SafeTextFilter`)
+Then run:
 
-The new `SafeTextFilter` class is the high-performance replacement for the legacy `SafeText` logic.
+```bash
+flutter pub get
+```
 
-#### Initialization
-Initialize with your desired language (defaults to English) to build the search Trie:
+---
+
+## Quick Start
 
 ```dart
 import 'package:safe_text/safe_text.dart';
 
 void main() async {
-  // Option 1: Initialize with a specific language
+  // Initialize once at app startup
   await SafeTextFilter.init(language: Language.english);
 
-  // Option 2: Initialize with a custom list of languages
-  await SafeTextFilter.init(languages: [Language.english, Language.hindi, Language.spanish]);
+  // Filter profanity
+  final clean = SafeTextFilter.filterText(text: "What the f@ck!");
+  print(clean); // "What the ****!"
 
-  // Option 3: Initialize with ALL supported languages
-  await SafeTextFilter.init(language: Language.all);
+  // Check for bad words
+  final hasBad = await SafeTextFilter.containsBadWord(text: "Some bad input");
+  print(hasBad); // true or false
+
+  // Detect phone numbers
+  final hasPhone = await PhoneNumberChecker.containsPhoneNumber(
+    text: "Call me at nine 7 eight 3 triple four",
+  );
+  print(hasPhone); // true
 }
 ```
 
-#### Filtering Text
+---
+
+## API Reference
+
+### `SafeTextFilter.init`
+
+Must be called **once** before using `filterText` or `containsBadWord`. Builds the Aho-Corasick trie from the selected word list(s).
+
 ```dart
-String filtered = SafeTextFilter.filterText(
-  text: "Hello b4dass!",
-  extraWords: ["example"], // Optional
-  excludedWords: ["friend"], // Optional
-  useDefaultWords: true,
-  fullMode: true,
-  obscureSymbol: "*",
-);
-// Result: "Hello ******!"
+// Single language
+await SafeTextFilter.init(language: Language.english);
+
+// Custom combination
+await SafeTextFilter.init(languages: [Language.english, Language.hindi, Language.spanish]);
+
+// All 75+ languages
+await SafeTextFilter.init(language: Language.all);
 ```
 
-#### Checking for Bad Words
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `language` | `Language?` | `Language.english` | A single language to load. Use `Language.all` to load every language. Ignored when `languages` is provided. |
+| `languages` | `List<Language>?` | `null` | A custom list of languages. Takes precedence over `language`. |
+
+> **Note:** If neither parameter is provided, the filter defaults to `Language.english`.
+
+---
+
+### `SafeTextFilter.filterText`
+
+Synchronous. Returns the input text with matched bad words replaced by the `obscureSymbol`.
+
+```dart
+String result = SafeTextFilter.filterText(
+  text: "Hello b4dass world!",
+  extraWords: ["badterm"],      // optional: add custom words
+  excludedWords: ["bass"],      // optional: never filter these
+  useDefaultWords: true,        // use the built-in word list
+  fullMode: true,               // true → "****", false → "b**s"
+  obscureSymbol: "*",           // replacement character
+);
+// Result: "Hello ****** world!"
+```
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `text` | `String` | **required** | The input string to process. |
+| `extraWords` | `List<String>?` | `null` | Additional words to filter on top of (or instead of) the built-in list. |
+| `excludedWords` | `List<String>?` | `null` | Words that must never be filtered, even if they appear in the list. |
+| `useDefaultWords` | `bool` | `true` | Include the built-in language word list. Set to `false` to use only `extraWords`. |
+| `fullMode` | `bool` | `true` | `true`: replace every character (`****`). `false`: keep first and last characters (`f**k`). |
+| `obscureSymbol` | `String` | `*` | The replacement character. |
+
+---
+
+### `SafeTextFilter.containsBadWord`
+
+Asynchronous. Returns `true` if the text contains at least one filtered word.
+
 ```dart
 bool hasBadWord = await SafeTextFilter.containsBadWord(
   text: "Don't be a pendejo",
+  extraWords: ["badterm"],   // optional
+  excludedWords: ["pend"],   // optional
+  useDefaultWords: true,     // optional
 );
 ```
 
-### 2. Phone Number Detection (`PhoneNumberChecker`)
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `text` | `String` | **required** | The input string to check. |
+| `extraWords` | `List<String>?` | `null` | Additional words to check against. |
+| `excludedWords` | `List<String>?` | `null` | Words to ignore even if matched. |
+| `useDefaultWords` | `bool` | `true` | Include the built-in word list in the check. |
+
+---
+
+### `PhoneNumberChecker.containsPhoneNumber`
+
+Asynchronous. Runs in a **separate isolate** via Flutter's `compute` function so it never blocks the UI thread.
+
+Detects phone numbers expressed as:
+- Pure digits: `9783444`
+- Word-based: `nine seven eight three four four four`
+- Mixed: `9 seven 8 3444`
+- Multiplier words: `nine seven eight three triple four`
+
+Supported multiplier words: `double`, `triple`, `quadruple`, `quintuple`, `sextuple`, `septuple`, `octuple`, `nonuple`, `decuple`.
 
 ```dart
 bool hasPhone = await PhoneNumberChecker.containsPhoneNumber(
   text: "Call me at nine 7 eight 3 triple four",
-  minLength: 7,
-  maxLength: 15,
+  minLength: 7,   // minimum digit count to be considered a phone number
+  maxLength: 15,  // maximum digit count
 );
 ```
 
-### 3. Legacy Support (`SafeText`)
-The original `SafeText` class is still available but marked as **@Deprecated**. It internally redirects to the new modular classes. We recommend migrating to the new API for a better developer experience.
-
-## Parameters
-
 | Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `text` | `String` | **Required** | The input string to process. |
-| `extraWords` | `List<String>?`| `null` | Add custom patterns to the filter list. |
-| `excludedWords`| `List<String>?`| `null` | Phrases that should NOT be filtered. |
-| `useDefaultWords`| `bool` | `true` | Include the built-in language patterns. |
-| `fullMode` | `bool` | `true` | `true`: `****`, `false`: `f**k`. |
-| `obscureSymbol`| `String` | `*` | Symbol used for obscuring. |
+|---|---|---|---|
+| `text` | `String` | **required** | The input string to check. |
+| `minLength` | `int` | `7` | Minimum number of digits for a valid phone number. |
+| `maxLength` | `int` | `15` | Maximum number of digits for a valid phone number. |
 
-## Why is v2.0.0 so fast?
+---
 
-Legacy versions used a nested loop approach (for every bad word, run a regex). With 10,000+ words, this grew exponentially slow. 
+## Supported Languages
 
-**Aho-Corasick** builds a Finite State Automaton (Trie) from the word list. The engine then scans your text **exactly once**, matching all possible patterns simultaneously in `O(N)` time where N is the length of your text.
+Pass any of these `Language` enum values to `SafeTextFilter.init`. Use `Language.all` to load every language simultaneously.
+
+<details>
+<summary>View all 77 supported languages</summary>
+
+| Enum | Language |
+|---|---|
+| `Language.afrikaans` | Afrikaans |
+| `Language.amharic` | Amharic |
+| `Language.arabic` | Arabic |
+| `Language.azerbaijani` | Azerbaijani |
+| `Language.belarusian` | Belarusian |
+| `Language.bulgarian` | Bulgarian |
+| `Language.catalan` | Catalan |
+| `Language.cebuano` | Cebuano |
+| `Language.czech` | Czech |
+| `Language.welsh` | Welsh |
+| `Language.danish` | Danish |
+| `Language.german` | German |
+| `Language.dzongkha` | Dzongkha |
+| `Language.greek` | Greek |
+| `Language.english` | English |
+| `Language.esperanto` | Esperanto |
+| `Language.spanish` | Spanish |
+| `Language.estonian` | Estonian |
+| `Language.basque` | Basque |
+| `Language.persian` | Persian |
+| `Language.finnish` | Finnish |
+| `Language.filipino` | Filipino |
+| `Language.french` | French |
+| `Language.scottishGaelic` | Scottish Gaelic |
+| `Language.galician` | Galician |
+| `Language.hindi` | Hindi |
+| `Language.croatian` | Croatian |
+| `Language.hungarian` | Hungarian |
+| `Language.armenian` | Armenian |
+| `Language.indonesian` | Indonesian |
+| `Language.icelandic` | Icelandic |
+| `Language.italian` | Italian |
+| `Language.japanese` | Japanese |
+| `Language.kabyle` | Kabyle |
+| `Language.kannada` | Kannada |
+| `Language.khmer` | Khmer |
+| `Language.korean` | Korean |
+| `Language.latin` | Latin |
+| `Language.lithuanian` | Lithuanian |
+| `Language.latvian` | Latvian |
+| `Language.maori` | Maori |
+| `Language.macedonian` | Macedonian |
+| `Language.malayalam` | Malayalam |
+| `Language.mongolian` | Mongolian |
+| `Language.marathi` | Marathi |
+| `Language.malay` | Malay |
+| `Language.maltese` | Maltese |
+| `Language.burmese` | Burmese |
+| `Language.dutch` | Dutch |
+| `Language.norwegian` | Norwegian |
+| `Language.norfuk` | Norfuk / Pitcairn |
+| `Language.piapoco` | Piapoco |
+| `Language.polish` | Polish |
+| `Language.portuguese` | Portuguese |
+| `Language.romanian` | Romanian |
+| `Language.kriol` | Kriol |
+| `Language.russian` | Russian |
+| `Language.slovak` | Slovak |
+| `Language.slovenian` | Slovenian |
+| `Language.samoan` | Samoan |
+| `Language.albanian` | Albanian |
+| `Language.serbian` | Serbian |
+| `Language.swedish` | Swedish |
+| `Language.tamil` | Tamil |
+| `Language.telugu` | Telugu |
+| `Language.tetum` | Tetum |
+| `Language.thai` | Thai |
+| `Language.klingon` | Klingon |
+| `Language.tongan` | Tongan |
+| `Language.turkish` | Turkish |
+| `Language.ukrainian` | Ukrainian |
+| `Language.uzbek` | Uzbek |
+| `Language.vietnamese` | Vietnamese |
+| `Language.yiddish` | Yiddish |
+| `Language.chinese` | Chinese |
+| `Language.zulu` | Zulu |
+| `Language.all` | All of the above |
+
+</details>
+
+---
+
+## How it Works
+
+**Legacy approach (v1.x):** For each bad word in a list of 10,000+ words, run a separate regex scan over the entire input — `O(W × N)` where W is the word count.
+
+**v2.0.0 approach:** The Aho-Corasick algorithm builds a Finite State Automaton (Trie) once from the entire word list. The engine then scans the input **exactly once**, matching all patterns simultaneously in `O(N)` time where N is the length of the text — regardless of how many words are in the list.
+
+```
+Input text  ──► [Normalizer] ──► [Aho-Corasick FSA] ──► Match ranges ──► [StringBuffer] ──► Filtered text
+                  (leet-speak)     (single O(N) pass)    (merged)         (single-pass)
+```
+
+---
+
+## Migrating from v1.x
+
+The original `SafeText` class is still available but marked `@Deprecated`. It internally delegates to the new classes. Migrate when ready:
+
+| v1.x | v2.0.0 |
+|---|---|
+| `await SafeTextFilter.init(...)` | Required — call once at startup |
+| `SafeText.filterText(text: ...)` | `SafeTextFilter.filterText(text: ...)` |
+| `await SafeText.containsBadWord(text: ...)` | `await SafeTextFilter.containsBadWord(text: ...)` |
+| `await SafeText.containsPhoneNumber(text: ...)` | `await PhoneNumberChecker.containsPhoneNumber(text: ...)` |
+
+**Before:**
+```dart
+// v1.x — no init required, but slow
+bool bad = await SafeText.containsBadWord(text: "some input");
+```
+
+**After:**
+```dart
+// v2.0.0 — init once, then use anywhere
+await SafeTextFilter.init(language: Language.english); // once, e.g. in main()
+bool bad = await SafeTextFilter.containsBadWord(text: "some input");
+```
+
+---
+
+## Limitations
+
+- **`SafeTextFilter.init` must be called before use.** Calling `filterText` or `containsBadWord` before `init` will fall back to a small built-in word list without the full multilingual dataset.
+- **Phone number detection is English-word based.** Words like "nine", "triple", etc. are English only — the detector does not parse written numbers in other languages.
+- **False positives on technical terms.** Short words in the filter list may match substrings of unrelated technical terms. Use `excludedWords` to suppress known false positives.
+- **`Language.all` increases init time.** Loading all 75+ language files is I/O-heavy. For most apps a targeted language list is faster.
+
+---
 
 ## Contributing
 
-Pull requests are welcome. For major changes, please open an issue first.
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for the full guidelines. The short version:
+
+1. Clone the repo and check out the `develop` branch.
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Add tests for any new behaviour.
+4. Run checks before submitting:
+   ```bash
+   flutter analyze
+   flutter test
+   ```
+5. Open a pull request targeting `develop`. Ensure CI passes.
+
+For major changes, please open an issue first to discuss the approach.
+
+---
 
 ## Data Source
 
-SafeText uses the comprehensive [List of Dirty, Naughty, Obscene, and Otherwise Bad Words](https://github.com/LDNOOBWV2/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words_V2) repository. This dataset includes:
-- **75+ Dialects/Languages**
+SafeText uses the [List of Dirty, Naughty, Obscene, and Otherwise Bad Words](https://github.com/LDNOOBWV2/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words_V2) dataset:
+
+- **75+ dialects and languages**
 - **55,000+ curated words**
 
-We are grateful to the contributors of this dataset for providing a robust foundation for profanity filtering.
+We are grateful to the contributors of this dataset for providing a robust multilingual foundation.
+
+---
 
 ## Authors
 
@@ -122,4 +393,9 @@ We are grateful to the contributors of this dataset for providing a robust found
   </a>
 </p>
 
-Connect on LinkedIn: [Ronit Rameja](https://www.linkedin.com/in/ronit-rameja-8a708b252/)
+<p align="center">
+  <a href="https://www.linkedin.com/in/ronit-rameja-8a708b252/">LinkedIn</a> •
+  <a href="https://github.com/master-wayne7/safe_text/issues">Report an Issue</a> •
+  <a href="https://github.com/master-wayne7/safe_text/discussions">Discussions</a> •
+  <a href="https://www.buymeacoffee.com/ronitrameja">Buy me a coffee</a>
+</p>
