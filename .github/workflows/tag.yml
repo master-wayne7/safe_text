@@ -1,5 +1,6 @@
-name: Release & Publish
+name: Tag
 
+# Step 1: On merge to main, read the version from pubspec.yaml and create a git tag.
 on:
   push:
     branches: [main]
@@ -41,12 +42,3 @@ jobs:
           git config user.email "github-actions@github.com"
           git tag v${{ steps.version.outputs.VERSION }}
           git push origin v${{ steps.version.outputs.VERSION }}
-
-  publish:
-    needs: tag
-    if: needs.tag.outputs.tag_exists == 'false'
-
-    permissions:
-      id-token: write
-
-    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
