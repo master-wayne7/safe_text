@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/master-wayne7/safe_text/refs/heads/master/assets/image/safeText.png" alt="SafeText Banner">
+  <img src="https://raw.githubusercontent.com/master-wayne7/safe_text/refs/heads/main/assets/image/safeText.png" alt="SafeText Banner">
 </p>
 
 Safe Text is a high-performance Flutter package designed to filter out offensive language (profanity) and detect phone numbers. Version 2.0.0 introduces a state-of-the-art **Aho-Corasick** engine for near-instant filtering across multiple languages.
