@@ -56,6 +56,7 @@ A high-performance Flutter package for filtering offensive language (profanity) 
 - Scans thousands of bad words in a single pass of the input text.
 - Catches common character substitutions: `@→a`, `4→a`, `3→e`, `0→o`, `$→s`, and more.
 - Detects phone numbers in digits, words, mixed formats, and multiplier words (e.g., "triple five").
+- Multiple masking strategies — full (`******`), partial (`f**k`), or custom replacement (`[censored]`).
 - Customizable — add your own words or exclude specific phrases.
 - Non-blocking — `PhoneNumberChecker` runs in a separate isolate via `compute`.
 - Works on Android, iOS, Web, macOS, Linux, and Windows.
@@ -94,9 +95,23 @@ void main() async {
   // Initialize once at app startup
   await SafeTextFilter.init(language: Language.english);
 
-  // Filter profanity
+  // Filter profanity (full masking — default)
   final clean = SafeTextFilter.filterText(text: "What the f@ck!");
   print(clean); // "What the ****!"
+
+  // Partial masking — keeps first & last characters for 4+ letter words
+  final partial = SafeTextFilter.filterText(
+    text: "What the f@ck!",
+    strategy: const MaskStrategy.partial(),
+  );
+  print(partial); // "What the f**k!"
+
+  // Custom replacement
+  final custom = SafeTextFilter.filterText(
+    text: "What the f@ck!",
+    strategy: const MaskStrategy.custom(replacement: '[redacted]'),
+  );
+  print(custom); // "What the [redacted]!"
 
   // Check for bad words
   final hasBad = await SafeTextFilter.containsBadWord(text: "Some bad input");
@@ -140,18 +155,31 @@ await SafeTextFilter.init(language: Language.all);
 
 ### `SafeTextFilter.filterText`
 
-Synchronous. Returns the input text with matched bad words replaced by the `obscureSymbol`.
+Synchronous. Returns the input text with matched bad words masked according to the chosen `MaskStrategy`.
 
 ```dart
+// Full masking (default)
 String result = SafeTextFilter.filterText(
   text: "Hello b4dass world!",
   extraWords: ["badterm"],      // optional: add custom words
   excludedWords: ["bass"],      // optional: never filter these
   useDefaultWords: true,        // use the built-in word list
-  fullMode: true,               // true → "****", false → "b**s"
-  obscureSymbol: "*",           // replacement character
 );
 // Result: "Hello ****** world!"
+
+// Partial masking
+String partial = SafeTextFilter.filterText(
+  text: "Hello b4dass world!",
+  strategy: const MaskStrategy.partial(),
+);
+// Result: "Hello b****s world!"
+
+// Custom replacement
+String custom = SafeTextFilter.filterText(
+  text: "Hello b4dass world!",
+  strategy: const MaskStrategy.custom(), // defaults to "[censored]"
+);
+// Result: "Hello [censored] world!"
 ```
 
 | Parameter | Type | Default | Description |
@@ -160,8 +188,17 @@ String result = SafeTextFilter.filterText(
 | `extraWords` | `List<String>?` | `null` | Additional words to filter on top of (or instead of) the built-in list. |
 | `excludedWords` | `List<String>?` | `null` | Words that must never be filtered, even if they appear in the list. |
 | `useDefaultWords` | `bool` | `true` | Include the built-in language word list. Set to `false` to use only `extraWords`. |
-| `fullMode` | `bool` | `true` | `true`: replace every character (`****`). `false`: keep first and last characters (`f**k`). |
-| `obscureSymbol` | `String` | `*` | The replacement character. |
+| `strategy` | `MaskStrategy?` | `MaskStrategy.full()` | Masking strategy. See [Masking Strategies](#masking-strategies) below. |
+| `fullMode` | `bool` | `true` | **Deprecated.** Use `strategy` instead. `true` maps to `MaskStrategy.full()`, `false` maps to `MaskStrategy.partial()`. |
+| `obscureSymbol` | `String` | `*` | **Deprecated.** Pass `obscureSymbol` via `MaskStrategy.full()` or `MaskStrategy.partial()` instead. |
+
+#### Masking Strategies
+
+| Strategy | Constructor | Output Example | Description |
+|---|---|---|---|
+| Full | `MaskStrategy.full(obscureSymbol: '*')` | `badass` → `******` | Replaces every character with the obscure symbol. |
+| Partial | `MaskStrategy.partial(obscureSymbol: '*')` | `fuck` → `f**k`, `ass` → `a**` | Keeps first character visible. For 4+ letter words, also keeps the last character. |
+| Custom | `MaskStrategy.custom(replacement: '[censored]')` | `badass` → `[censored]` | Replaces the entire word with a fixed string. |
 
 ---
 
