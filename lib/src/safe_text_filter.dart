@@ -4,6 +4,7 @@ import 'package:safe_text/constants/badwords.dart';
 
 import 'aho_corasick.dart';
 import 'models/language.dart';
+import 'models/mask_strategy.dart';
 
 /// Core filter class that uses Aho-Corasick trie for efficient searching
 class SafeTextFilter {
@@ -170,8 +171,9 @@ class SafeTextFilter {
     List<String>? extraWords,
     List<String>? excludedWords,
     bool useDefaultWords = true,
-    bool fullMode = true,
-    String obscureSymbol = "*",
+    @Deprecated('Use strategy instead.') bool fullMode = true,
+    @Deprecated('Use strategy instead. Pass obscureSymbol via MaskStrategy.full() or MaskStrategy.partial().') String obscureSymbol = "*",
+    MaskStrategy? strategy,
   }) {
     if (useDefaultWords == false && extraWords == null) {
       assert(false, "extraWords can't be null for usingDefaultWords = false");
@@ -185,6 +187,15 @@ class SafeTextFilter {
         }
       }
     }
+
+    // Derive the effective masking strategy. When the caller passes an explicit
+    // [strategy] it takes precedence. Otherwise fall back to the legacy
+    // [fullMode] / [obscureSymbol] pair so that existing call sites continue to
+    // work without modification.
+    final MaskStrategy maskStrategy = strategy ??
+        (fullMode
+            ? MaskStrategy.full(obscureSymbol: obscureSymbol)
+            : MaskStrategy.partial(obscureSymbol: obscureSymbol));
 
     if (text.isEmpty) return text;
 
@@ -245,16 +256,28 @@ class SafeTextFilter {
       buffer.write(text.substring(lastAppended, range.start));
 
       final matchLength = range.end - range.start;
-      if (fullMode) {
-        buffer.write(obscureSymbol * matchLength);
-      } else {
-        if (matchLength > 2) {
-          buffer.write(text[range.start]);
-          buffer.write(obscureSymbol * (matchLength - 2));
-          buffer.write(text[range.end - 1]);
-        } else {
-          buffer.write(text.substring(range.start, range.end));
-        }
+      switch (maskStrategy) {
+        // Full: replace every character with the obscure symbol
+        case FullMask(:final obscureSymbol):
+          buffer.write(obscureSymbol * matchLength);
+
+        // Partial: keep first char visible, mask the rest.
+        // For 4+ letter words, also keep the last char visible.
+        case PartialMask(:final obscureSymbol):
+          if (matchLength == 1) {
+            buffer.write(obscureSymbol);
+          } else {
+            final showLast = matchLength >= 4;
+            final maskCount = matchLength - 1 - (showLast ? 1 : 0);
+            buffer
+              ..write(text[range.start])
+              ..write(obscureSymbol * maskCount);
+            if (showLast) buffer.write(text[range.end - 1]);
+          }
+
+        // Custom: replace entire word with the replacement string
+        case CustomMask(:final replacement):
+          buffer.write(replacement);
       }
       lastAppended = range.end;
     }
