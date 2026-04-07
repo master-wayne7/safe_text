@@ -3,8 +3,6 @@ name: CI
 on:
   pull_request:
     branches: [develop, main]
-  pull_request_target:
-    branches: [develop]
   push:
     branches: [develop]
 
