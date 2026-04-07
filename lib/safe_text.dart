@@ -1,8 +1,10 @@
 export 'src/models/language.dart';
+export 'src/models/mask_strategy.dart';
 export 'src/safe_text_filter.dart';
 export 'src/phone_number_checker.dart';
 
 // Maintaining backwards compatibility by redirecting original `SafeText` to the new implementations
+import 'src/models/mask_strategy.dart';
 import 'src/safe_text_filter.dart';
 import 'src/phone_number_checker.dart';
 
@@ -15,8 +17,12 @@ class SafeText {
     List<String>? extraWords,
     List<String>? excludedWords,
     bool useDefaultWords = true,
-    bool fullMode = true,
+    @Deprecated('Use strategy instead.') bool fullMode = true,
+    @Deprecated(
+      'Use strategy instead. Pass obscureSymbol via MaskStrategy.full() or MaskStrategy.partial().',
+    )
     String obscureSymbol = "*",
+    MaskStrategy? strategy,
   }) {
     return SafeTextFilter.filterText(
       text: text,
@@ -25,6 +31,7 @@ class SafeText {
       useDefaultWords: useDefaultWords,
       fullMode: fullMode,
       obscureSymbol: obscureSymbol,
+      strategy: strategy,
     );
   }
 
