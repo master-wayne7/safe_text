@@ -1,3 +1,16 @@
+## 2.1.0
+
+### Added
+- **`MaskStrategy` API**: New sealed class with three strategies for controlling how profanity is masked:
+  - `MaskStrategy.full({obscureSymbol})` — replaces every character (e.g. `"badass"` → ``"******"`).
+  - `MaskStrategy.partial({obscureSymbol})` — keeps first (and last, for 4+ char words) visible (e.g. `"damn"` → `"d**n"`).
+  - `MaskStrategy.custom({replacement})` — replaces the entire word with a fixed string (e.g. `"[censored]"`).
+- `strategy` parameter on `SafeTextFilter.filterText` and the deprecated `SafeText.filterText` to accept a `MaskStrategy`.
+
+### Changed
+- Legacy `fullMode` and `obscureSymbol` parameters on `filterText` are now deprecated in favour of `MaskStrategy`. Existing call sites continue to work unchanged.
+- `MaskStrategy` is exported from the top-level `safe_text.dart` barrel file.
+
 ## 2.0.1
 
 ### Documentation
