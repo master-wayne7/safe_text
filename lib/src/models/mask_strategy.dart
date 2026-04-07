@@ -4,6 +4,11 @@ const kDefaultObscureSymbol = '*';
 /// The default replacement string used by [CustomMask] when no custom value is provided.
 const kDefaultReplacement = '[censored]';
 
+/// {@template obscure_symbol_constraint}
+/// [obscureSymbol] must be exactly one character (e.g. `'*'`, `'#'`, `'X'`),
+/// defaults to [kDefaultObscureSymbol].
+/// {@endtemplate}
+///
 /// Controls how detected profanity is masked in filtered text.
 ///
 /// Three strategies are available:
@@ -16,12 +21,16 @@ sealed class MaskStrategy {
 
   /// Replaces every character with [obscureSymbol].
   ///
+  /// {@macro obscure_symbol_constraint}
+  ///
   /// Example: `"badass"` → `"******"`
   const factory MaskStrategy.full({String obscureSymbol}) = FullMask;
 
   /// Keeps the first character visible and masks the rest. For words with
   /// 4 or more characters, also keeps the last character visible.
   /// Single-character matches are fully replaced with the obscure symbol.
+  ///
+  /// {@macro obscure_symbol_constraint}
   ///
   /// Examples:
   /// - `"damn"` → `"d**n"` (4+ letters: first & last visible)
@@ -37,21 +46,31 @@ sealed class MaskStrategy {
   const factory MaskStrategy.custom({String replacement}) = CustomMask;
 }
 
-/// Masks every character of the matched word with [obscureSymbol].
-class FullMask extends MaskStrategy {
-  /// The character used to replace each letter of the matched word.
+/// Base class for strategies that mask with a single [obscureSymbol] character.
+///
+/// {@macro obscure_symbol_constraint}
+sealed class ObscureSymbolStrategy extends MaskStrategy {
+  /// {@macro obscure_symbol_constraint}
   final String obscureSymbol;
 
-  const FullMask({this.obscureSymbol = kDefaultObscureSymbol});
+  const ObscureSymbolStrategy({this.obscureSymbol = kDefaultObscureSymbol})
+      : assert(obscureSymbol.length == 1,
+            'obscureSymbol must be a single character');
+}
+
+/// Masks every character of the matched word with [obscureSymbol].
+///
+/// {@macro obscure_symbol_constraint}
+class FullMask extends ObscureSymbolStrategy {
+  const FullMask({super.obscureSymbol});
 }
 
 /// Partially masks the matched word, keeping the first character visible.
 /// For words with 4+ characters, also keeps the last character visible.
-class PartialMask extends MaskStrategy {
-  /// The character used to replace masked letters.
-  final String obscureSymbol;
-
-  const PartialMask({this.obscureSymbol = kDefaultObscureSymbol});
+///
+/// {@macro obscure_symbol_constraint}
+class PartialMask extends ObscureSymbolStrategy {
+  const PartialMask({super.obscureSymbol});
 }
 
 /// Replaces the entire matched word with a fixed [replacement] string.

@@ -28,6 +28,7 @@ A high-performance Flutter package for filtering offensive language (profanity) 
 - [API Reference](#api-reference)
   - [`SafeTextFilter.init`](#safetextfilterinit)
   - [`SafeTextFilter.filterText`](#safetextfilterfiltertext)
+    - [Masking Strategies](#masking-strategies)
   - [`SafeTextFilter.containsBadWord`](#safetextfiltercontainsbadword)
   - [`PhoneNumberChecker.containsPhoneNumber`](#phonenumbercheckercontainsphonenumber)
 - [Supported Languages](#supported-languages)
@@ -76,7 +77,7 @@ Or manually add it to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  safe_text: ^2.0.1
+  safe_text: ^2.1.1
 ```
 
 Then run:
@@ -110,9 +111,9 @@ void main() async {
   // Custom replacement
   final custom = SafeTextFilter.filterText(
     text: "What the f@ck!",
-    strategy: const MaskStrategy.custom(replacement: '[redacted]'),
+    strategy: const MaskStrategy.custom(replacement: '[censored]'),
   );
-  print(custom); // "What the [redacted]!"
+  print(custom); // "What the [censored]!"
 
   // Check for bad words
   final hasBad = await SafeTextFilter.containsBadWord(text: "Some bad input");
@@ -202,6 +203,8 @@ String custom = SafeTextFilter.filterText(
 | Full | `MaskStrategy.full(obscureSymbol: '*')` | `badass` → `******` | Replaces every character with the obscure symbol. |
 | Partial | `MaskStrategy.partial(obscureSymbol: '*')` | `damn` → `d**n`, `ass` → `a**` | Keeps first character visible. For 4+ letter words, also keeps the last character. |
 | Custom | `MaskStrategy.custom(replacement: '[censored]')` | `badass` → `[censored]` | Replaces the entire word with a fixed string. |
+
+> **Note:** `obscureSymbol` must be exactly one character. This is enforced via `assert` in debug mode — a multi-character string will trigger an `AssertionError` during development.
 
 ---
 
