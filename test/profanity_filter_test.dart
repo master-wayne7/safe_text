@@ -189,6 +189,20 @@ void main() {
           "Hello $replacement");
     });
 
+    test('FullMask throws AssertionError for multi-character obscureSymbol',
+        () {
+      expect(
+          () => MaskStrategy.full(obscureSymbol: '##'),
+          throwsA(isA<AssertionError>()));
+    });
+
+    test('PartialMask throws AssertionError for multi-character obscureSymbol',
+        () {
+      expect(
+          () => MaskStrategy.partial(obscureSymbol: '##'),
+          throwsA(isA<AssertionError>()));
+    });
+
     test('backward compat: fullMode: true still produces full masking', () {
       // ignore: deprecated_member_use
       expect(
