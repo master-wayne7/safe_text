@@ -37,6 +37,7 @@ A high-performance Flutter package for filtering offensive language (profanity) 
 - [Contributing](#contributing)
 - [Data Source](#data-source)
 - [Authors](#authors)
+- [Contributors](#contributors)
 
 ---
 
@@ -437,4 +438,20 @@ We are grateful to the contributors of this dataset for providing a robust multi
   <a href="https://github.com/master-wayne7/safe_text/issues">Report an Issue</a> •
   <a href="https://github.com/master-wayne7/safe_text/discussions">Discussions</a> •
   <a href="https://www.buymeacoffee.com/ronitrameja">Buy me a coffee</a>
+</p>
+
+---
+
+## Contributors
+
+Thanks to everyone who has contributed to SafeText!
+
+<p align="center">
+  <a href="https://github.com/master-wayne7/safe_text/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=master-wayne7/safe_text" alt="Contributors" />
+  </a>
+</p>
+
+<p align="center">
+  <i>Made with <a href="https://contrib.rocks">contrib.rocks</a></i>
 </p>
