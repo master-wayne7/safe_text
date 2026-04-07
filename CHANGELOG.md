@@ -1,3 +1,9 @@
+## 2.1.1
+
+### Changed
+- Refactored `FullMask` and `PartialMask` to extend a shared `ObscureSymbolStrategy` base class, eliminating duplicated `obscureSymbol` field logic.
+- Added assertion that `obscureSymbol` must be exactly one character, giving a clear error message on misuse.
+
 ## 2.1.0
 
 ### Added
