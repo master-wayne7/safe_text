@@ -179,6 +179,16 @@ void main() {
           "Hello ***");
     });
 
+    test('strategy takes precedence over deprecated fullMode', () {
+      const replacement = '[BLOCKED]';
+      expect(
+          SafeTextFilter.filterText(
+              text: "Hello badass",
+              fullMode: true,
+              strategy: const MaskStrategy.custom(replacement: replacement)),
+          "Hello $replacement");
+    });
+
     test('backward compat: fullMode: true still produces full masking', () {
       // ignore: deprecated_member_use
       expect(

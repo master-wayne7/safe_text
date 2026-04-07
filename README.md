@@ -192,12 +192,14 @@ String custom = SafeTextFilter.filterText(
 | `fullMode` | `bool` | `true` | **Deprecated.** Use `strategy` instead. `true` maps to `MaskStrategy.full()`, `false` maps to `MaskStrategy.partial()`. |
 | `obscureSymbol` | `String` | `*` | **Deprecated.** Pass `obscureSymbol` via `MaskStrategy.full()` or `MaskStrategy.partial()` instead. |
 
+> **Precedence:** When `strategy` is provided, it takes full precedence over the deprecated `fullMode` and `obscureSymbol` parameters. When `strategy` is omitted, `fullMode: true` maps to `MaskStrategy.full(obscureSymbol: obscureSymbol)` and `fullMode: false` maps to `MaskStrategy.partial(obscureSymbol: obscureSymbol)`.
+
 #### Masking Strategies
 
 | Strategy | Constructor | Output Example | Description |
 |---|---|---|---|
 | Full | `MaskStrategy.full(obscureSymbol: '*')` | `badass` → `******` | Replaces every character with the obscure symbol. |
-| Partial | `MaskStrategy.partial(obscureSymbol: '*')` | `fuck` → `f**k`, `ass` → `a**` | Keeps first character visible. For 4+ letter words, also keeps the last character. |
+| Partial | `MaskStrategy.partial(obscureSymbol: '*')` | `damn` → `d**n`, `ass` → `a**` | Keeps first character visible. For 4+ letter words, also keeps the last character. |
 | Custom | `MaskStrategy.custom(replacement: '[censored]')` | `badass` → `[censored]` | Replaces the entire word with a fixed string. |
 
 ---
