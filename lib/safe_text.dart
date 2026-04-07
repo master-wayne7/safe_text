@@ -18,7 +18,10 @@ class SafeText {
     List<String>? excludedWords,
     bool useDefaultWords = true,
     @Deprecated('Use strategy instead.') bool fullMode = true,
-    @Deprecated('Use strategy instead. Pass obscureSymbol via MaskStrategy.full() or MaskStrategy.partial().') String obscureSymbol = "*",
+    @Deprecated(
+      'Use strategy instead. Pass obscureSymbol via MaskStrategy.full() or MaskStrategy.partial().',
+    )
+    String obscureSymbol = "*",
     MaskStrategy? strategy,
   }) {
     return SafeTextFilter.filterText(

@@ -110,10 +110,12 @@ void main() {
   group("MaskStrategy", () {
     test('MaskStrategy.full() produces full masking (same as default)', () {
       expect(
-          SafeTextFilter.filterText(
-              text: "Hello badass",
-              strategy: const MaskStrategy.full()),
-          "Hello ******");
+        SafeTextFilter.filterText(
+          text: "Hello badass",
+          strategy: const MaskStrategy.full(),
+        ),
+        "Hello ******",
+      );
     });
 
     test("MaskStrategy.full(obscureSymbol: '#') masks with '#'", () {
@@ -127,8 +129,7 @@ void main() {
     test('MaskStrategy.partial() on 4+ letter word keeps first and last', () {
       expect(
           SafeTextFilter.filterText(
-              text: "Hello badass",
-              strategy: const MaskStrategy.partial()),
+              text: "Hello badass", strategy: const MaskStrategy.partial()),
           "Hello b****s");
     });
 
@@ -145,8 +146,7 @@ void main() {
     test("MaskStrategy.custom() defaults to '[censored]'", () {
       expect(
           SafeTextFilter.filterText(
-              text: "Hello badass",
-              strategy: const MaskStrategy.custom()),
+              text: "Hello badass", strategy: const MaskStrategy.custom()),
           "Hello [censored]");
     });
 
@@ -170,7 +170,8 @@ void main() {
           "Hello * end");
     });
 
-    test("MaskStrategy.custom(replacement: '***') uses provided replacement", () {
+    test("MaskStrategy.custom(replacement: '***') uses provided replacement",
+        () {
       expect(
           SafeTextFilter.filterText(
               text: "Hello badass",
@@ -182,8 +183,7 @@ void main() {
       // ignore: deprecated_member_use
       expect(
           SafeTextFilter.filterText(
-              text: "Hello badass how you doing anal impaler",
-              fullMode: true),
+              text: "Hello badass how you doing anal impaler", fullMode: true),
           "Hello ****** how you doing ************");
     });
 
@@ -191,8 +191,7 @@ void main() {
       // ignore: deprecated_member_use
       expect(
           SafeTextFilter.filterText(
-              text: "Hello badass how you doing anal impaler",
-              fullMode: false),
+              text: "Hello badass how you doing anal impaler", fullMode: false),
           "Hello b****s how you doing a**********r");
     });
   });
