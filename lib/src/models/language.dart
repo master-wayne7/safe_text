@@ -75,11 +75,6 @@ enum Language {
   yiddish,
   chinese,
   zulu,
-  bengali,
-  gujarati,
-  punjabi,
-  swahili,
-  urdu,
   all,
 }
 
@@ -315,21 +310,6 @@ extension LanguageExtension on Language {
       case 'zu':
       case 'zulu':
         return Language.zulu;
-      case 'bn':
-      case 'bengali':
-        return Language.bengali;
-      case 'gu':
-      case 'gujarati':
-        return Language.gujarati;
-      case 'pa':
-      case 'punjabi':
-        return Language.punjabi;
-      case 'sw':
-      case 'swahili':
-        return Language.swahili;
-      case 'ur':
-      case 'urdu':
-        return Language.urdu;
       case 'all':
         return Language.all;
       default:
@@ -491,16 +471,6 @@ extension LanguageExtension on Language {
         return 'zh';
       case Language.zulu:
         return 'zu';
-      case Language.bengali:
-        return 'bn';
-      case Language.gujarati:
-        return 'gu';
-      case Language.punjabi:
-        return 'pa';
-      case Language.swahili:
-        return 'sw';
-      case Language.urdu:
-        return 'ur';
       case Language.all:
         return '';
     }
