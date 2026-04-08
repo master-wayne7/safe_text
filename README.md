@@ -14,7 +14,7 @@
   <a href="https://pub.dev/packages/safe_text"><img src="https://img.shields.io/badge/platform-android%20%7C%20ios%20%7C%20web%20%7C%20macos%20%7C%20linux%20%7C%20windows-lightgrey" alt="platforms"></a>
 </p>
 
-A high-performance Flutter package for filtering offensive language (profanity) and detecting phone numbers. Powered by the **Aho-Corasick** algorithm for `O(N)` single-pass scanning across 75+ languages and 55,000+ curated words.
+A high-performance Flutter package for filtering offensive language (profanity) and detecting phone numbers. Powered by the **Aho-Corasick** algorithm for `O(N)` single-pass scanning across 80+ languages and 55,000+ curated words.
 
 ---
 
@@ -46,7 +46,7 @@ A high-performance Flutter package for filtering offensive language (profanity) 
 
 - **Aho-Corasick Algorithm** — Near-instant multi-pattern search in `O(N)` complexity.
 - **Up to 20x faster** than the legacy regex-loop approach.
-- **75+ languages** — Full human-readable enum names (e.g., `Language.hindi`, `Language.spanish`).
+- **80+ languages** — Full human-readable enum names (e.g., `Language.hindi`, `Language.spanish`).
 - **Modular API** — `SafeTextFilter` for profanity, `PhoneNumberChecker` for phone numbers.
 - **Memory efficient** — Single-pass string building via `StringBuffer`.
 - **Leet-speak normalization** — Catches bypasses like `f@ck` or `b4d` with zero extra overhead.
@@ -77,7 +77,7 @@ Or manually add it to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  safe_text: ^2.1.1
+  safe_text: ^2.1.2
 ```
 
 Then run:
@@ -263,7 +263,7 @@ bool hasPhone = await PhoneNumberChecker.containsPhoneNumber(
 Pass any of these `Language` enum values to `SafeTextFilter.init`. Use `Language.all` to load every language simultaneously.
 
 <details>
-<summary>View all 77 supported languages</summary>
+<summary>View all 82 supported languages</summary>
 
 | Enum | Language |
 |---|---|
@@ -343,6 +343,11 @@ Pass any of these `Language` enum values to `SafeTextFilter.init`. Use `Language
 | `Language.yiddish` | Yiddish |
 | `Language.chinese` | Chinese |
 | `Language.zulu` | Zulu |
+| `Language.bengali` | Bengali |
+| `Language.gujarati` | Gujarati |
+| `Language.punjabi` | Punjabi |
+| `Language.swahili` | Swahili |
+| `Language.urdu` | Urdu |
 | `Language.all` | All of the above |
 
 </details>
@@ -419,7 +424,7 @@ For major changes, please open an issue first to discuss the approach.
 
 SafeText uses the [List of Dirty, Naughty, Obscene, and Otherwise Bad Words](https://github.com/LDNOOBWV2/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words_V2) dataset:
 
-- **75+ dialects and languages**
+- **80+ dialects and languages**
 - **55,000+ curated words**
 
 We are grateful to the contributors of this dataset for providing a robust multilingual foundation.
@@ -451,7 +456,7 @@ Thanks to everyone who has contributed to SafeText!
 
 <p align="center">
   <a href="https://github.com/master-wayne7/safe_text/graphs/contributors">
-    <img src="https://contrib.rocks/image?repo=master-wayne7/safe_text" alt="Contributors" />
+    <img src="https://stg.contrib.rocks/image?repo=master-wayne7/safe_text" alt="Contributors" />
   </a>
 </p>
 

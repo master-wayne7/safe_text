@@ -1,3 +1,9 @@
+## 2.1.2
+
+### Added
+- **5 new languages**: Bengali (`Language.bengali`), Gujarati (`Language.gujarati`), Punjabi (`Language.punjabi`), Swahili (`Language.swahili`), and Urdu (`Language.urdu`).
+- Language count now reaches **82 supported languages** (including `Language.all`).
+
 ## 2.1.1
 
 ### Changed
