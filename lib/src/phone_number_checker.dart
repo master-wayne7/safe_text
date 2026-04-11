@@ -1,6 +1,24 @@
 import 'package:flutter/foundation.dart';
 
+/// Detects phone numbers embedded in plain text, including digit-only,
+/// word-only, and mixed formats.
+///
+/// The checker understands spoken representations such as `"triple five"`,
+/// `"double zero"`, and combinations like `"555 double 0 123"`, in addition
+/// to standard numeric strings.
+///
+/// ## Usage
+///
+/// ```dart
+/// final found = await PhoneNumberChecker.containsPhoneNumber(
+///   text: 'Call me at 555 triple two 9',
+/// ); // true
+/// ```
+///
+/// The check runs in a separate isolate via `compute` so it does not block
+/// the main thread.
 class PhoneNumberChecker {
+  /// Maps English number words to their single-digit string equivalents.
   static final Map<String, String> numberWords = {
     'zero': '0',
     'one': '1',
@@ -14,6 +32,9 @@ class PhoneNumberChecker {
     'nine': '9',
   };
 
+  /// Maps English multiplier words to their integer values.
+  ///
+  /// Used to expand phrases like `"triple five"` into `"555"`.
   static final Map<String, int> multiplierWords = {
     'double': 2,
     'triple': 3,
@@ -26,8 +47,33 @@ class PhoneNumberChecker {
     'decuple': 10,
   };
 
-  /// Public method to check if a given text contains a phone number in digits, words, or mixed format.
-  /// This method runs in a separate isolate using the `compute` function.
+  /// Returns `true` if [text] contains what appears to be a phone number.
+  ///
+  /// Detects phone numbers written as digits, English number words, multiplier
+  /// phrases, or any combination of the above. Examples that are detected:
+  ///
+  /// - `"Call 07700900123"` — digit-only
+  /// - `"Call zero seven seven zero zero nine"` — word-only
+  /// - `"Call 077 double zero 9"` — mixed with multiplier
+  ///
+  /// Parameters:
+  /// - [text] — the string to inspect.
+  /// - [minLength] — minimum digit count for a sequence to be considered a
+  ///   phone number. Defaults to `7`.
+  /// - [maxLength] — maximum digit count. Defaults to `15`.
+  ///
+  /// ```dart
+  /// await PhoneNumberChecker.containsPhoneNumber(
+  ///   text: 'My number is 07700 900 123',
+  /// ); // true
+  ///
+  /// await PhoneNumberChecker.containsPhoneNumber(
+  ///   text: 'Hello world',
+  /// ); // false
+  /// ```
+  ///
+  /// The computation runs in a separate isolate via `compute` to avoid
+  /// blocking the main thread.
   static Future<bool> containsPhoneNumber({
     required String text,
     int minLength = 7,
@@ -41,7 +87,7 @@ class PhoneNumberChecker {
     });
   }
 
-  /// Helper function to run in a separate isolate
+  /// Entry point executed inside the isolate spawned by [containsPhoneNumber].
   static bool _checkPhoneNumberInIsolate(Map<String, dynamic> params) {
     String text = params['text'];
     int minLength = params['minLength'];
@@ -55,7 +101,9 @@ class PhoneNumberChecker {
     return false;
   }
 
-  /// Private method to check for phone numbers in mixed format (digits + words)
+  /// Scans [text] for a sequence of number tokens (digits, number words, or
+  /// multiplier phrases) whose combined digit count falls within
+  /// [[minLength], [maxLength]].
   static bool _containsPhoneNumberInMixedFormat(
       String text, int minLength, int maxLength) {
     text = text.toLowerCase();
