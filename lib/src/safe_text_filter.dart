@@ -6,7 +6,44 @@ import 'aho_corasick.dart';
 import 'models/language.dart';
 import 'models/mask_strategy.dart';
 
-/// Core filter class that uses Aho-Corasick trie for efficient searching
+/// The primary API for profanity detection and text filtering.
+///
+/// [SafeTextFilter] uses the Aho-Corasick algorithm to match hundreds of
+/// bad words in a single linear pass over the input. It supports 80+
+/// languages, leet-speak normalization, customizable masking strategies,
+/// and word-boundary awareness to avoid false positives.
+///
+/// ## Quick start
+///
+/// ### 1. Initialize once (e.g. in `main` or during app startup)
+///
+/// ```dart
+/// await SafeTextFilter.init(language: Language.english);
+/// ```
+///
+/// ### 2. Filter text synchronously
+///
+/// ```dart
+/// final clean = SafeTextFilter.filterText(text: 'Hello badass!');
+/// // 'Hello ******!'
+/// ```
+///
+/// ### 3. Check for bad words
+///
+/// ```dart
+/// final hasBadWord = await SafeTextFilter.containsBadWord(text: 'Hello badass!');
+/// // true
+/// ```
+///
+/// ## Notes
+///
+/// - Call [init] **before** using [filterText] or [containsBadWord].
+///   Without initialization the filter falls back to a built-in word list
+///   scanned linearly, which is slower for large inputs.
+/// - [filterText] is synchronous once [init] has completed.
+/// - Input is automatically lowercased and leet-speak–normalized
+///   (see [normalizeText]) before matching; the original casing is
+///   preserved in the returned string.
 class SafeTextFilter {
   static AhoCorasick? _trie;
   static bool _isInitialized = false;
@@ -34,10 +71,33 @@ class SafeTextFilter {
     '#'.codeUnitAt(0): 'h'.codeUnitAt(0),
   };
 
-  /// Initializes the SafeTextFilter.
-  /// You can provide a single [language] or a list of [languages].
-  /// If [languages] is provided, it takes precedence over [language].
-  /// Defaults to [Language.english] if both are null.
+  /// Initializes [SafeTextFilter] by loading the profanity word list and
+  /// building the Aho-Corasick trie.
+  ///
+  /// Must be called once before [filterText] or [containsBadWord] for
+  /// optimal performance. Calling it multiple times rebuilds the trie from
+  /// scratch with the newly specified languages.
+  ///
+  /// - Provide a single [language] or a list of [languages]. If [languages]
+  ///   is non-empty it takes precedence over [language].
+  /// - Pass [Language.all] as [language] to load every available language.
+  /// - Defaults to [Language.english] when both parameters are omitted.
+  ///
+  /// ```dart
+  /// // Single language
+  /// await SafeTextFilter.init(language: Language.english);
+  ///
+  /// // Multiple languages
+  /// await SafeTextFilter.init(
+  ///   languages: [Language.english, Language.spanish],
+  /// );
+  ///
+  /// // All supported languages
+  /// await SafeTextFilter.init(language: Language.all);
+  /// ```
+  ///
+  /// If asset files cannot be loaded (e.g. in certain test environments),
+  /// the filter silently falls back to a built-in bundled word list.
   static Future<void> init(
       {Language? language, List<Language>? languages}) async {
     final words = await _loadWords(language: language, languages: languages);
@@ -98,7 +158,31 @@ class SafeTextFilter {
     }
   }
 
-  /// Normalizes text by replacing leet-speak with standard alphabets.
+  /// Normalizes [text] by replacing common leet-speak characters with their
+  /// standard alphabetic equivalents, then lowercases the result.
+  ///
+  /// This is applied automatically by [filterText] and [containsBadWord]
+  /// before matching, so callers rarely need to invoke it directly.
+  ///
+  /// Substitution examples:
+  ///
+  /// | Input | Output |
+  /// |-------|--------|
+  /// | `@`   | `a`    |
+  /// | `4`   | `a`    |
+  /// | `3`   | `e`    |
+  /// | `1`   | `i`    |
+  /// | `0`   | `o`    |
+  /// | `$`   | `s`    |
+  /// | `7`   | `t`    |
+  ///
+  /// ```dart
+  /// SafeTextFilter.normalizeText('h3ll0'); // 'hello'
+  /// SafeTextFilter.normalizeText('b@d');   // 'bad'
+  /// SafeTextFilter.normalizeText('');      // ''
+  /// ```
+  ///
+  /// Returns [text] unchanged if it is empty.
   static String normalizeText(String text) {
     if (text.isEmpty) return text;
     final units = List<int>.from(text.toLowerCase().codeUnits);
@@ -111,7 +195,36 @@ class SafeTextFilter {
     return String.fromCharCodes(units);
   }
 
-  /// Static method to check if a string contains any bad words.
+  /// Returns `true` if [text] contains one or more bad words.
+  ///
+  /// The check is case-insensitive and leet-speak–aware (see [normalizeText]).
+  /// Word boundaries are respected — a bad word embedded inside a longer
+  /// innocent word (e.g. `"classic"` containing `"ass"`) is **not** flagged.
+  ///
+  /// Parameters:
+  /// - [text] — the string to inspect.
+  /// - [extraWords] — additional words to treat as profanity on top of the
+  ///   default dataset.
+  /// - [excludedWords] — words from the default dataset to ignore.
+  /// - [useDefaultWords] — set to `false` to match only against [extraWords].
+  ///   Defaults to `true`.
+  ///
+  /// ```dart
+  /// await SafeTextFilter.containsBadWord(
+  ///   text: 'What a badass move',
+  /// ); // true
+  ///
+  /// await SafeTextFilter.containsBadWord(
+  ///   text: 'Have a nice day',
+  /// ); // false
+  ///
+  /// // Custom words only
+  /// await SafeTextFilter.containsBadWord(
+  ///   text: 'this is spam',
+  ///   extraWords: ['spam'],
+  ///   useDefaultWords: false,
+  /// ); // true
+  /// ```
   static Future<bool> containsBadWord({
     required String text,
     List<String>? extraWords,
@@ -165,7 +278,57 @@ class SafeTextFilter {
     return false;
   }
 
-  /// This method will filter out the bad words from your provided [string].
+  /// Filters profanity from [text] and returns the masked result.
+  ///
+  /// The method is **synchronous** after [init] has been called. Without prior
+  /// initialization it falls back to a linear scan against the built-in word
+  /// list, which is slower for large inputs.
+  ///
+  /// Input is leet-speak–normalized (see [normalizeText]) before matching, but
+  /// the **original characters** are preserved in the returned string — only
+  /// the positions of matched words are replaced.
+  ///
+  /// Parameters:
+  /// - [text] — the string to filter.
+  /// - [strategy] — controls how matched words are replaced. Choose from
+  ///   [MaskStrategy.full] (default), [MaskStrategy.partial], or
+  ///   [MaskStrategy.custom]. When provided, this takes precedence over the
+  ///   deprecated [fullMode] and [obscureSymbol] parameters.
+  /// - [extraWords] — additional words to treat as profanity.
+  /// - [excludedWords] — words from the default dataset to skip.
+  /// - [useDefaultWords] — set to `false` to filter using only [extraWords].
+  ///   Requires [extraWords] to be non-null when `false`.
+  ///
+  /// ```dart
+  /// // Default — full masking with '*'
+  /// SafeTextFilter.filterText(text: 'Hello badass!');
+  /// // 'Hello ******!'
+  ///
+  /// // Partial masking — first and last characters visible for 4+ letter words
+  /// SafeTextFilter.filterText(
+  ///   text: 'Hello badass!',
+  ///   strategy: const MaskStrategy.partial(),
+  /// );
+  /// // 'Hello b****s!'
+  ///
+  /// // Custom replacement string
+  /// SafeTextFilter.filterText(
+  ///   text: 'Hello badass!',
+  ///   strategy: const MaskStrategy.custom(replacement: '[removed]'),
+  /// );
+  /// // 'Hello [removed]!'
+  ///
+  /// // Exclude a word from being filtered
+  /// SafeTextFilter.filterText(
+  ///   text: 'Hello badass',
+  ///   excludedWords: ['badass'],
+  /// );
+  /// // 'Hello badass'
+  /// ```
+  ///
+  /// Throws an [AssertionError] in debug mode if:
+  /// - [useDefaultWords] is `false` and [extraWords] is `null`.
+  /// - The same word appears in both [extraWords] and [excludedWords].
   static String filterText({
     required String text,
     List<String>? extraWords,

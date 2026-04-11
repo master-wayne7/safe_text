@@ -1,3 +1,24 @@
+/// Supported languages for the profanity word dataset.
+///
+/// Pass a value from this enum to [SafeTextFilter.init] to load the
+/// corresponding bundled word list. Use [Language.all] to load every
+/// available language at once (increases memory usage and initialization
+/// time).
+///
+/// Language codes follow ISO 639 where available.
+///
+/// ```dart
+/// // Single language
+/// await SafeTextFilter.init(language: Language.english);
+///
+/// // Multiple languages
+/// await SafeTextFilter.init(
+///   languages: [Language.english, Language.spanish, Language.hindi],
+/// );
+///
+/// // Every supported language
+/// await SafeTextFilter.init(language: Language.all);
+/// ```
 enum Language {
   afrikaans,
   amharic,
@@ -83,7 +104,20 @@ enum Language {
   all,
 }
 
+/// Utility extension on [Language] for string conversion and asset path resolution.
 extension LanguageExtension on Language {
+  /// Returns the [Language] value that corresponds to [languageCode].
+  ///
+  /// Accepts both full language names (e.g. `'english'`) and ISO 639 codes
+  /// (e.g. `'en'`). Matching is case-insensitive.
+  ///
+  /// Falls back to [Language.english] for any unrecognized code.
+  ///
+  /// ```dart
+  /// LanguageExtension.fromString('en');      // Language.english
+  /// LanguageExtension.fromString('Spanish'); // Language.spanish
+  /// LanguageExtension.fromString('xyz');     // Language.english (default)
+  /// ```
   static Language fromString(String languageCode) {
     switch (languageCode.toLowerCase()) {
       case 'af':
@@ -337,6 +371,17 @@ extension LanguageExtension on Language {
     }
   }
 
+  /// The ISO 639 file code used to locate the bundled asset for this language.
+  ///
+  /// Asset files are stored at `assets/data/<fileCode>.txt` inside the
+  /// package. Returns an empty string for [Language.all], which is a sentinel
+  /// value and does not correspond to a single file.
+  ///
+  /// ```dart
+  /// Language.english.fileCode; // 'en'
+  /// Language.spanish.fileCode; // 'es'
+  /// Language.all.fileCode;     // ''
+  /// ```
   String get fileCode {
     switch (this) {
       case Language.afrikaans:
