@@ -56,7 +56,7 @@ class AhoCorasick {
     final matches = <int, List<String>>{};
     TrieNode? current = _root;
     final textLower = text.toLowerCase();
-    final units = textLower.codeUnits;
+    final units = textLower.runes.toList();
 
     for (int i = 0; i < units.length; i++) {
       final rune = units[i];
