@@ -1,3 +1,10 @@
+## 2.1.3
+
+### Documentation
+- Added full dartdoc coverage to `AhoCorasick` and `TrieNode` — includes algorithm overview, usage examples, and per-member descriptions.
+- Added dartdoc to the `Language` enum and `LanguageExtension` — documents `fromString`, `fileCode`, and all usage patterns.
+- Added inline migration table and per-method docs to the deprecated `SafeText` class.
+
 ## 2.1.2
 
 ### Added
