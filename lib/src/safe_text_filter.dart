@@ -177,8 +177,7 @@ class SafeTextFilter {
         }
       }
 
-      if (match &&
-          _isWordBoundary(normalizedRunes, i, i + wordRunes.length)) {
+      if (match && _isWordBoundary(normalizedRunes, i, i + wordRunes.length)) {
         return true;
       }
     }
