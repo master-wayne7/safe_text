@@ -1,3 +1,9 @@
+## 2.1.4
+
+### Fixed
+- **Unicode rune correctness**: Replaced all `codeUnits` (UTF-16) usage with `runes` (Unicode code points) throughout `SafeTextFilter` and `AhoCorasick`. This fixes incorrect indexing and potential missed/false matches for characters outside the Basic Multilingual Plane (e.g. emoji, supplementary CJK characters).
+- Word-boundary checks, match-range offsets, and string reconstruction now operate on rune indices, ensuring accurate filtering for all Unicode input.
+
 ## 2.1.3
 
 ### Documentation
