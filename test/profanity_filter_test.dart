@@ -230,6 +230,16 @@ void main() {
       expect(filtered, contains("******"));
       expect(filtered, contains("*****"));
     });
+
+    test("filters foul emojis and characters outside BMP correctly", () async {
+      await SafeTextFilter.init(language: Language.english);
+
+      // 🖕 and 💩 are in en.txt
+      final text = "You are a 💩 and a 🖕";
+      final filtered = SafeTextFilter.filterText(text: text);
+
+      expect(filtered, "You are a * and a *");
+    });
   });
 
   group("Performance Benchmark (Aho-Corasick vs Legacy Loop)", () {

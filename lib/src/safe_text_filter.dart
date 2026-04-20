@@ -101,14 +101,19 @@ class SafeTextFilter {
   /// Normalizes text by replacing leet-speak with standard alphabets.
   static String normalizeText(String text) {
     if (text.isEmpty) return text;
-    final units = List<int>.from(text.toLowerCase().codeUnits);
-    for (int i = 0; i < units.length; i++) {
-      final replacement = _normalizationMap[units[i]];
+    final runes = _normalizeToRunes(text);
+    return String.fromCharCodes(runes);
+  }
+
+  static List<int> _normalizeToRunes(String text) {
+    final runes = text.toLowerCase().runes.toList();
+    for (int i = 0; i < runes.length; i++) {
+      final replacement = _normalizationMap[runes[i]];
       if (replacement != null) {
-        units[i] = replacement;
+        runes[i] = replacement;
       }
     }
-    return String.fromCharCodes(units);
+    return runes;
   }
 
   /// Static method to check if a string contains any bad words.
@@ -120,23 +125,26 @@ class SafeTextFilter {
   }) async {
     if (text.isEmpty) return false;
 
-    final normalized = normalizeText(text);
+    final normalizedRunes = _normalizeToRunes(text);
 
     // Optimized sync check if initialized
     if (_isInitialized && useDefaultWords) {
+      final normalized = String.fromCharCodes(normalizedRunes);
       final matches = _trie!.search(normalized);
       for (final entry in matches.entries) {
         final endIndex = entry.key;
         for (final word in entry.value) {
           if (excludedWords != null && excludedWords.contains(word)) continue;
+          final wordRuneLength = word.runes.length;
           if (_isWordBoundary(
-              normalized, endIndex - word.length + 1, endIndex + 1)) {
+              normalizedRunes, endIndex - wordRuneLength + 1, endIndex + 1)) {
             return true;
           }
         }
       }
     } else if (useDefaultWords) {
       // Fallback or legacy path
+      final normalized = String.fromCharCodes(normalizedRunes);
       for (final word in badWords) {
         if (excludedWords != null && excludedWords.contains(word)) continue;
         if (_hasMatch(normalized, word)) return true;
@@ -144,6 +152,7 @@ class SafeTextFilter {
     }
 
     if (extraWords != null) {
+      final normalized = String.fromCharCodes(normalizedRunes);
       for (final word in extraWords) {
         if (excludedWords != null && excludedWords.contains(word)) continue;
         if (_hasMatch(normalized, word)) return true;
@@ -155,12 +164,22 @@ class SafeTextFilter {
 
   static bool _hasMatch(String normalizedText, String word) {
     final wordLower = word.toLowerCase();
-    int index = normalizedText.indexOf(wordLower);
-    while (index != -1) {
-      if (_isWordBoundary(normalizedText, index, index + wordLower.length)) {
+    final normalizedRunes = normalizedText.runes.toList();
+    final wordRunes = wordLower.runes.toList();
+
+    // Simple pattern matching on runes
+    for (int i = 0; i <= normalizedRunes.length - wordRunes.length; i++) {
+      bool match = true;
+      for (int j = 0; j < wordRunes.length; j++) {
+        if (normalizedRunes[i + j] != wordRunes[j]) {
+          match = false;
+          break;
+        }
+      }
+
+      if (match && _isWordBoundary(normalizedRunes, i, i + wordRunes.length)) {
         return true;
       }
-      index = normalizedText.indexOf(wordLower, index + 1);
     }
     return false;
   }
@@ -202,17 +221,20 @@ class SafeTextFilter {
 
     if (text.isEmpty) return text;
 
-    final normalizedText = normalizeText(text);
+    final textRunes = text.runes.toList();
+    final normalizedRunes = _normalizeToRunes(text);
     final List<_Range> matchRanges = [];
 
     // Step 1: Collect match ranges
     if (_isInitialized && useDefaultWords) {
-      final trieMatches = _trie!.search(normalizedText);
+      final normalized = String.fromCharCodes(normalizedRunes);
+      final trieMatches = _trie!.search(normalized);
       trieMatches.forEach((endIndex, words) {
         for (final word in words) {
           if (excludedWords != null && excludedWords.contains(word)) continue;
-          final startIndex = endIndex - word.length + 1;
-          if (_isWordBoundary(normalizedText, startIndex, endIndex + 1)) {
+          final wordRuneLength = word.runes.length;
+          final startIndex = endIndex - wordRuneLength + 1;
+          if (_isWordBoundary(normalizedRunes, startIndex, endIndex + 1)) {
             matchRanges.add(_Range(startIndex, endIndex + 1));
           }
         }
@@ -220,14 +242,14 @@ class SafeTextFilter {
     } else if (useDefaultWords) {
       for (final word in badWords) {
         if (excludedWords != null && excludedWords.contains(word)) continue;
-        _addMatchesForWord(normalizedText, word, matchRanges);
+        _addMatchesForWord(normalizedRunes, word, matchRanges);
       }
     }
 
     if (extraWords != null) {
       for (final word in extraWords) {
         if (excludedWords != null && excludedWords.contains(word)) continue;
-        _addMatchesForWord(normalizedText, word, matchRanges);
+        _addMatchesForWord(normalizedRunes, word, matchRanges);
       }
     }
 
@@ -256,7 +278,8 @@ class SafeTextFilter {
     int lastAppended = 0;
 
     for (final range in merged) {
-      buffer.write(text.substring(lastAppended, range.start));
+      buffer.write(
+          String.fromCharCodes(textRunes.sublist(lastAppended, range.start)));
 
       final matchLength = range.end - range.start;
       switch (maskStrategy) {
@@ -273,9 +296,11 @@ class SafeTextFilter {
             final showLast = matchLength >= 4;
             final maskCount = matchLength - 1 - (showLast ? 1 : 0);
             buffer
-              ..write(text[range.start])
+              ..write(String.fromCharCode(textRunes[range.start]))
               ..write(obscureSymbol * maskCount);
-            if (showLast) buffer.write(text[range.end - 1]);
+            if (showLast) {
+              buffer.write(String.fromCharCode(textRunes[range.end - 1]));
+            }
           }
 
         // Custom: replace entire word with the replacement string
@@ -285,40 +310,50 @@ class SafeTextFilter {
       lastAppended = range.end;
     }
 
-    if (lastAppended < text.length) {
-      buffer.write(text.substring(lastAppended));
+    if (lastAppended < textRunes.length) {
+      buffer.write(String.fromCharCodes(textRunes.sublist(lastAppended)));
     }
 
     return buffer.toString();
   }
 
   static void _addMatchesForWord(
-      String normalizedText, String word, List<_Range> matches) {
-    final wordLower = word.toLowerCase();
-    int index = normalizedText.indexOf(wordLower);
-    while (index != -1) {
-      final endIndex = index + wordLower.length;
-      if (_isWordBoundary(normalizedText, index, endIndex)) {
-        matches.add(_Range(index, endIndex));
+      List<int> normalizedRunes, String word, List<_Range> matches) {
+    final wordRunes = word.toLowerCase().runes.toList();
+    if (wordRunes.isEmpty) return;
+
+    for (int i = 0; i <= normalizedRunes.length - wordRunes.length; i++) {
+      bool match = true;
+      for (int j = 0; j < wordRunes.length; j++) {
+        if (normalizedRunes[i + j] != wordRunes[j]) {
+          match = false;
+          break;
+        }
       }
-      index = normalizedText.indexOf(wordLower, index + 1);
+
+      if (match) {
+        final endIndex = i + wordRunes.length;
+        if (_isWordBoundary(normalizedRunes, i, endIndex)) {
+          matches.add(_Range(i, endIndex));
+        }
+      }
     }
   }
 
-  static bool _isWordBoundary(String text, int start, int end) {
+  static bool _isWordBoundary(List<int> runes, int start, int end) {
     if (start > 0) {
-      final charCode = text.codeUnitAt(start - 1);
-      if (_isAlphanumeric(charCode)) return false;
+      final rune = runes[start - 1];
+      if (_isAlphanumeric(rune)) return false;
     }
-    if (end < text.length) {
-      final charCode = text.codeUnitAt(end);
-      if (_isAlphanumeric(charCode)) return false;
+    if (end < runes.length) {
+      final rune = runes[end];
+      if (_isAlphanumeric(rune)) return false;
     }
     return true;
   }
 
-  static bool _isAlphanumeric(int charCode) {
-    return _unicodeLetterOrDigit.hasMatch(String.fromCharCode(charCode));
+  static bool _isAlphanumeric(int rune) {
+    return _unicodeLetterOrDigit.hasMatch(String.fromCharCode(rune));
   }
 }
 
