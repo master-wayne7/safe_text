@@ -1,3 +1,11 @@
+## 2.1.5
+
+### Data
+- **Marathi dataset cleanup**: Removed ~55 false positives from `mr.txt` — everyday words incorrectly flagged as profanity (e.g. `देव` God, `शिशी` bottle, `शीर्षक` title, `सह` with, `सुगंध` fragrance, `उत्साही` enthusiastic, `दु:ख` sorrow, `दृश्य` scene, `गर्भाशय` uterus, `परीक्षक` examiner, `घाट` riverbank, and more).
+- Removed 2 duplicate roman-script entries (`jhavadya`, `zawadya`).
+- Fixed trailing punctuation on one entry.
+- Added missing common Marathi profanity: `halkat` / `हलकट`, `haramzada` / `हरामजादा`, `yeda` / `येडा`, `randwa` / `रांडवा`, `लुच्चा`, `बेशरम`, `नालायक`, `झवाडी`, `धंदेवाली`.
+
 ## 2.1.4
 
 ### Fixed
