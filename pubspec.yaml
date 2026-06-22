@@ -1,6 +1,6 @@
 name: safe_text
 description: A fast Flutter profanity & swear word filter with phone number detection, powered by Aho-Corasick. Supports 80+ languages and 55,000+ curated bad words.
-version: 2.1.5
+version: 2.1.6
 homepage: https://github.com/master-wayne7/safe_text
 repository: https://github.com/master-wayne7/safe_text
 issue_tracker: https://github.com/master-wayne7/safe_text/issues
