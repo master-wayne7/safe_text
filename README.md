@@ -16,12 +16,13 @@
 
 A high-performance Flutter package for filtering offensive language (profanity) and detecting phone numbers. Powered by the **Aho-Corasick** algorithm for `O(N)` single-pass scanning across 80+ languages and 55,000+ curated words.
 
+> 💙 Find SafeText useful? A [like on pub.dev](https://pub.dev/packages/safe_text) or [star on GitHub](https://github.com/master-wayne7/safe_text) helps others discover it.
+
 ---
 
 ## Table of Contents
 
 - [Table of Contents](#table-of-contents)
-- [What's New in 2.0.0](#whats-new-in-200)
 - [Features](#features)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
@@ -39,17 +40,6 @@ A high-performance Flutter package for filtering offensive language (profanity) 
 - [Data Source](#data-source)
 - [Authors](#authors)
 - [Contributors](#contributors)
-
----
-
-## What's New in 2.0.0
-
-- **Aho-Corasick Algorithm** — Near-instant multi-pattern search in `O(N)` complexity.
-- **Up to 20x faster** than the legacy regex-loop approach.
-- **80+ languages** — Full human-readable enum names (e.g., `Language.hindi`, `Language.spanish`).
-- **Modular API** — `SafeTextFilter` for profanity, `PhoneNumberChecker` for phone numbers.
-- **Memory efficient** — Single-pass string building via `StringBuffer`.
-- **Leet-speak normalization** — Catches bypasses like `f@ck` or `b4d` with zero extra overhead.
 
 ---
 
