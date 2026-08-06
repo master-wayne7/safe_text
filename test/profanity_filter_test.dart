@@ -347,5 +347,16 @@ void main() {
 
       expect(acTime, isNotNull);
     });
+
+    test('will correctly reflect initialization status via isInitialized and reset state via reset()', () async {
+      SafeTextFilter.reset();
+      expect(SafeTextFilter.isInitialized, false);
+
+      await SafeTextFilter.init(language: Language.english);
+      expect(SafeTextFilter.isInitialized, true);
+
+      SafeTextFilter.reset();
+      expect(SafeTextFilter.isInitialized, false);
+    });
   });
 }
