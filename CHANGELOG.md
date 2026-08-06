@@ -1,3 +1,10 @@
+## 2.1.7
+
+### Added
+- **Package Lifecycle API**:
+  - `SafeTextFilter.isInitialized` getter — check whether word lists have been loaded and the Trie is built.
+  - `SafeTextFilter.reset()` method — clear loaded Trie word lists and reset initialization state, useful when dynamically switching languages or releasing memory.
+
 ## 2.1.6
 
 ### Documentation
