@@ -1,3 +1,17 @@
+## 2.1.7
+
+### Added
+- **Package Lifecycle API**:
+  - `SafeTextFilter.isInitialized` getter — check whether word lists have been loaded and the Trie is built.
+  - `SafeTextFilter.reset()` method — clear loaded Trie word lists and reset initialization state, useful when dynamically switching languages or releasing memory.
+
+## 2.1.6
+
+### Documentation
+- Rewrote the pub.dev package description and keywords with terms developers actually search for, to improve discoverability.
+- Removed the stale "What's New in 2.0.0" section from the README — already covered by Features/How it Works and the CHANGELOG.
+- Added a pub.dev like / GitHub star callout to the README.
+
 ## 2.1.5
 
 ### Data

@@ -143,6 +143,21 @@ await SafeTextFilter.init(language: Language.all);
 
 > **Note:** If neither parameter is provided, the filter defaults to `Language.english`.
 
+### `SafeTextFilter.isInitialized` & `SafeTextFilter.reset`
+
+Check initialization status or reset loaded word lists dynamically (e.g., when switching languages):
+
+```dart
+// Check if initialized
+if (!SafeTextFilter.isInitialized) {
+  await SafeTextFilter.init(language: Language.english);
+}
+
+// Reset state to reload with a different language
+SafeTextFilter.reset();
+await SafeTextFilter.init(language: Language.spanish);
+```
+
 ---
 
 ### `SafeTextFilter.filterText`
