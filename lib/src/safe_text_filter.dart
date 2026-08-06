@@ -11,6 +11,16 @@ class SafeTextFilter {
   static AhoCorasick? _trie;
   static bool _isInitialized = false;
 
+  /// Whether [SafeTextFilter] has been initialized via [init].
+  static bool get isInitialized => _isInitialized;
+
+  /// Resets the internal state of [SafeTextFilter], clearing the loaded Trie
+  /// word lists. Useful when dynamically switching languages or freeing memory.
+  static void reset() {
+    _trie = null;
+    _isInitialized = false;
+  }
+
   /// Matches any Unicode letter or digit (covers all scripts: Latin, Arabic,
   /// Devanagari, CJK, Hangul, Cyrillic, Hebrew, Thai, etc.)
   static final RegExp _unicodeLetterOrDigit =
