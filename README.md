@@ -28,6 +28,7 @@ A high-performance Flutter package for filtering offensive language (profanity) 
 - [Quick Start](#quick-start)
 - [API Reference](#api-reference)
   - [`SafeTextFilter.init`](#safetextfilterinit)
+  - [`SafeTextFilter.isInitialized` \& `SafeTextFilter.reset`](#safetextfilterisinitialized--safetextfilterreset)
   - [`SafeTextFilter.filterText`](#safetextfilterfiltertext)
     - [Masking Strategies](#masking-strategies)
   - [`SafeTextFilter.containsBadWord`](#safetextfiltercontainsbadword)
@@ -67,7 +68,7 @@ Or manually add it to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  safe_text: ^2.1.6
+  safe_text: ^2.1.7
 ```
 
 Then run:
