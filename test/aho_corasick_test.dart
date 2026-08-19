@@ -1,4 +1,4 @@
-import 'package:flutter_test/flutter_test.dart';
+import 'package:test/test.dart';
 import 'package:safe_text/src/aho_corasick.dart';
 
 void main() {

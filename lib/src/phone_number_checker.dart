@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'dart:isolate';
 
 class PhoneNumberChecker {
   static final Map<String, String> numberWords = {
@@ -27,18 +27,18 @@ class PhoneNumberChecker {
   };
 
   /// Public method to check if a given text contains a phone number in digits, words, or mixed format.
-  /// This method runs in a separate isolate using the `compute` function.
+  /// This method runs in a separate isolate using [Isolate.run].
   static Future<bool> containsPhoneNumber({
     required String text,
     int minLength = 7,
     int maxLength = 15,
   }) async {
-    // Use compute to run the heavy logic in a separate isolate
-    return await compute(_checkPhoneNumberInIsolate, {
-      'text': text,
-      'minLength': minLength,
-      'maxLength': maxLength,
-    });
+    // Use Isolate.run to run the heavy logic in a separate isolate
+    return Isolate.run(() => _checkPhoneNumberInIsolate({
+          'text': text,
+          'minLength': minLength,
+          'maxLength': maxLength,
+        }));
   }
 
   /// Helper function to run in a separate isolate

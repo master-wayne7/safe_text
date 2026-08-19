@@ -1,0 +1,22 @@
+/// Bundled word list for language code `ur`.
+const List<String> kUrWords = <String>[
+  'harami',
+  'bhenchod',
+  'madarchod',
+  'chutia',
+  'chutiya',
+  'kutta',
+  'kanjar',
+  'gashti',
+  'randi',
+  'bharva',
+  'bharwa',
+  'lanti',
+  'laanat',
+  'gaand',
+  'gand',
+  'sharam',
+  'besharam',
+  'beghairat',
+  'bayghairat',
+];

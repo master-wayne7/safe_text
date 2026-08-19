@@ -1,0 +1,21 @@
+/// Bundled word list for language code `ceb`.
+const List<String> kCebWords = <String>[
+  'anak sa kayat',
+  'baho ka ug bilat',
+  'bigaon',
+  'bulok',
+  'buwisit kang dako',
+  'gabaan pa unta ka karun',
+  'gabqq ka',
+  'kayatas buang',
+  'lungag sa asno',
+  'mananap ka',
+  'nakingsekso',
+  'sekso',
+  'tae',
+  'tambok nga asno',
+  'yabag ka',
+  'yawa ka',
+  'yawa kang dako',
+  'yawa pa ka sa tanang yawa',
+];
