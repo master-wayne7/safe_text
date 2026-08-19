@@ -1,6 +1,5 @@
-import 'dart:async';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:safe_text/constants/badwords.dart';
+import 'package:safe_text/data/word_lists.dart';
 
 import 'aho_corasick.dart';
 import 'models/language.dart';
@@ -48,9 +47,8 @@ class SafeTextFilter {
   /// You can provide a single [language] or a list of [languages].
   /// If [languages] is provided, it takes precedence over [language].
   /// Defaults to [Language.english] if both are null.
-  static Future<void> init(
-      {Language? language, List<Language>? languages}) async {
-    final words = await _loadWords(language: language, languages: languages);
+  static void init({Language? language, List<Language>? languages}) {
+    final words = _loadWords(language: language, languages: languages);
 
     // Building the Trie locally is fast and avoids serialization overhead
     _trie = AhoCorasick();
@@ -62,9 +60,9 @@ class SafeTextFilter {
     _isInitialized = true;
   }
 
-  static Future<List<String>> _loadWords(
-      {Language? language, List<Language>? languages}) async {
-    List<String> words = [];
+  static List<String> _loadWords(
+      {Language? language, List<Language>? languages}) {
+    final List<String> words = [];
     final List<Language> targetLanguages = [];
 
     if (languages != null && languages.isNotEmpty) {
@@ -78,19 +76,10 @@ class SafeTextFilter {
       }
     }
 
-    List<Future<String>> futures = [];
     for (var l in targetLanguages) {
-      futures.add(
-          _safeLoadAsset('packages/safe_text/assets/data/${l.fileCode}.txt'));
-    }
-
-    final results = await Future.wait(futures);
-    for (var content in results) {
-      if (content.isNotEmpty) {
-        words.addAll(content
-            .split('\n')
-            .map((e) => e.trim())
-            .where((e) => e.isNotEmpty));
+      final list = kWordListsByFileCode[l.fileCode];
+      if (list != null) {
+        words.addAll(list);
       }
     }
 
@@ -98,14 +87,6 @@ class SafeTextFilter {
       words.addAll(badWords);
     }
     return words.toSet().toList();
-  }
-
-  static Future<String> _safeLoadAsset(String path) async {
-    try {
-      return await rootBundle.loadString(path);
-    } catch (e) {
-      return '';
-    }
   }
 
   /// Normalizes text by replacing leet-speak with standard alphabets.
@@ -127,12 +108,12 @@ class SafeTextFilter {
   }
 
   /// Static method to check if a string contains any bad words.
-  static Future<bool> containsBadWord({
+  static bool containsBadWord({
     required String text,
     List<String>? extraWords,
     List<String>? excludedWords,
     bool useDefaultWords = true,
-  }) async {
+  }) {
     if (text.isEmpty) return false;
 
     final normalizedRunes = _normalizeToRunes(text);

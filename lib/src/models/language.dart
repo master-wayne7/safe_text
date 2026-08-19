@@ -9,15 +9,15 @@
 ///
 /// ```dart
 /// // Single language
-/// await SafeTextFilter.init(language: Language.english);
+/// SafeTextFilter.init(language: Language.english);
 ///
 /// // Multiple languages
-/// await SafeTextFilter.init(
+/// SafeTextFilter.init(
 ///   languages: [Language.english, Language.spanish, Language.hindi],
 /// );
 ///
 /// // Every supported language
-/// await SafeTextFilter.init(language: Language.all);
+/// SafeTextFilter.init(language: Language.all);
 /// ```
 enum Language {
   afrikaans,

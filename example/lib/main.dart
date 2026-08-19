@@ -6,7 +6,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Pre-initialize with English by default
-  await SafeTextFilter.init(language: Language.english);
+  SafeTextFilter.init(language: Language.english);
 
   runApp(const MyApp());
 }
@@ -56,7 +56,7 @@ class _SafeTextDemoState extends State<SafeTextDemo> {
     setState(() => _isLoading = true);
 
     // Re-initialize with the selected list
-    await SafeTextFilter.init(languages: _selectedLanguages);
+    SafeTextFilter.init(languages: _selectedLanguages);
 
     if (mounted) {
       setState(() => _isLoading = false);

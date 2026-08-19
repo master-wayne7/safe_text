@@ -22,10 +22,6 @@ dev_dependencies:
 
 example: main.dart
 
-flutter:
-  assets:
-    - assets/data/
-
 platforms:
   android:
   ios:

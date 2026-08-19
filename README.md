@@ -30,7 +30,6 @@ A high-performance Flutter package for filtering offensive language (profanity) 
   - [`SafeTextFilter.init`](#safetextfilterinit)
   - [`SafeTextFilter.isInitialized` \& `SafeTextFilter.reset`](#safetextfilterisinitialized--safetextfilterreset)
   - [`SafeTextFilter.filterText`](#safetextfilterfiltertext)
-    - [Masking Strategies](#masking-strategies)
   - [`SafeTextFilter.containsBadWord`](#safetextfiltercontainsbadword)
   - [`PhoneNumberChecker.containsPhoneNumber`](#phonenumbercheckercontainsphonenumber)
 - [Supported Languages](#supported-languages)
@@ -86,7 +85,7 @@ import 'package:safe_text/safe_text.dart';
 
 void main() async {
   // Initialize once at app startup
-  await SafeTextFilter.init(language: Language.english);
+  SafeTextFilter.init(language: Language.english);
 
   // Filter profanity (full masking — default)
   final clean = SafeTextFilter.filterText(text: "What the f@ck!");
@@ -107,7 +106,7 @@ void main() async {
   print(custom); // "What the [censored]!"
 
   // Check for bad words
-  final hasBad = await SafeTextFilter.containsBadWord(text: "Some bad input");
+  final hasBad = SafeTextFilter.containsBadWord(text: "Some bad input");
   print(hasBad); // true or false
 
   // Detect phone numbers
@@ -128,13 +127,13 @@ Must be called **once** before using `filterText` or `containsBadWord`. Builds t
 
 ```dart
 // Single language
-await SafeTextFilter.init(language: Language.english);
+SafeTextFilter.init(language: Language.english);
 
 // Custom combination
-await SafeTextFilter.init(languages: [Language.english, Language.hindi, Language.spanish]);
+SafeTextFilter.init(languages: [Language.english, Language.hindi, Language.spanish]);
 
 // All 75+ languages
-await SafeTextFilter.init(language: Language.all);
+SafeTextFilter.init(language: Language.all);
 ```
 
 | Parameter | Type | Default | Description |
@@ -151,12 +150,12 @@ Check initialization status or reset loaded word lists dynamically (e.g., when s
 ```dart
 // Check if initialized
 if (!SafeTextFilter.isInitialized) {
-  await SafeTextFilter.init(language: Language.english);
+  SafeTextFilter.init(language: Language.english);
 }
 
 // Reset state to reload with a different language
 SafeTextFilter.reset();
-await SafeTextFilter.init(language: Language.spanish);
+SafeTextFilter.init(language: Language.spanish);
 ```
 
 ---
@@ -219,7 +218,7 @@ String custom = SafeTextFilter.filterText(
 Asynchronous. Returns `true` if the text contains at least one filtered word.
 
 ```dart
-bool hasBadWord = await SafeTextFilter.containsBadWord(
+bool hasBadWord = SafeTextFilter.containsBadWord(
   text: "Don't be a pendejo",
   extraWords: ["badterm"],   // optional
   excludedWords: ["pend"],   // optional
@@ -379,9 +378,9 @@ The original `SafeText` class is still available but marked `@Deprecated`. It in
 
 | v1.x | v2.0.0 |
 |---|---|
-| `await SafeTextFilter.init(...)` | Required — call once at startup |
+| `SafeTextFilter.init(...)` | Required — call once at startup |
 | `SafeText.filterText(text: ...)` | `SafeTextFilter.filterText(text: ...)` |
-| `await SafeText.containsBadWord(text: ...)` | `await SafeTextFilter.containsBadWord(text: ...)` |
+| `await SafeText.containsBadWord(text: ...)` | `SafeTextFilter.containsBadWord(text: ...)` |
 | `await SafeText.containsPhoneNumber(text: ...)` | `await PhoneNumberChecker.containsPhoneNumber(text: ...)` |
 
 **Before:**
@@ -393,8 +392,8 @@ bool bad = await SafeText.containsBadWord(text: "some input");
 **After:**
 ```dart
 // v2.0.0 — init once, then use anywhere
-await SafeTextFilter.init(language: Language.english); // once, e.g. in main()
-bool bad = await SafeTextFilter.containsBadWord(text: "some input");
+SafeTextFilter.init(language: Language.english); // once, e.g. in main()
+bool bad = SafeTextFilter.containsBadWord(text: "some input");
 ```
 
 ---

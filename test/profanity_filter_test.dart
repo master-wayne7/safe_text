@@ -1,12 +1,12 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:safe_text/safe_text.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group("SafeTextFilter class method filterText", () {
-    setUpAll(() async {
+    setUpAll(() {
       // For unit tests, we bypass the isolate Trie initialization and mock asset loading.
       // However, to test `SafeTextFilter.init` without actual assets being loaded correctly
       // by the test bundler, we test the legacy checking which defaults to `badwords.dart` or we can skip initialization
@@ -85,8 +85,8 @@ void main() {
       String cleanText = "This is a clean example";
 
       bool containsBadWord =
-          await SafeTextFilter.containsBadWord(text: textWithBadWord);
-      bool noBadWord = await SafeTextFilter.containsBadWord(text: cleanText);
+          SafeTextFilter.containsBadWord(text: textWithBadWord);
+      bool noBadWord = SafeTextFilter.containsBadWord(text: cleanText);
 
       expect(containsBadWord, true);
       expect(noBadWord, false);
@@ -96,11 +96,11 @@ void main() {
       String textWithCustomBadWord = "This is an inappropriate word example";
       String cleanText = "This is another clean example";
 
-      bool containsCustomBadWord = await SafeTextFilter.containsBadWord(
+      bool containsCustomBadWord = SafeTextFilter.containsBadWord(
         text: textWithCustomBadWord,
         extraWords: ['inappropriate'],
       );
-      bool noBadWord = await SafeTextFilter.containsBadWord(text: cleanText);
+      bool noBadWord = SafeTextFilter.containsBadWord(text: cleanText);
 
       expect(containsCustomBadWord, true);
       expect(noBadWord, false);
@@ -221,7 +221,7 @@ void main() {
   group("SafeTextFilter Initialization", () {
     test("initializes successfully with a list of languages", () async {
       // Test the new list-based initialization
-      await SafeTextFilter.init(languages: [Language.english, Language.hindi]);
+      SafeTextFilter.init(languages: [Language.english, Language.hindi]);
 
       // Verify it still works correctly
       final text = "This is badass and kutta behavior";
@@ -232,7 +232,7 @@ void main() {
     });
 
     test("filters foul emojis and characters outside BMP correctly", () async {
-      await SafeTextFilter.init(language: Language.english);
+      SafeTextFilter.init(language: Language.english);
 
       // 🖕 and 💩 are in en.txt
       final text = "You are a 💩 and a 🖕";
@@ -258,7 +258,7 @@ void main() {
 
       // 2. Initialize Aho-Corasick (this builds the Trie)
       // Note: We ignore asset errors by catching them in init fallback to badWords
-      await SafeTextFilter.init(language: Language.english);
+      SafeTextFilter.init(language: Language.english);
 
       // 3. Measure Aho-Corasick Loop
       final stopwatchAC = Stopwatch()..start();
@@ -323,7 +323,7 @@ void main() {
       final fallbackTime = stopwatchFallback.elapsedMilliseconds;
 
       // 2. Initialize Aho-Corasick (Trie)
-      await SafeTextFilter.init(language: Language.all);
+      SafeTextFilter.init(language: Language.all);
 
       // 3. Measure Aho-Corasick
       final stopwatchAC = Stopwatch()..start();
@@ -348,11 +348,13 @@ void main() {
       expect(acTime, isNotNull);
     });
 
-    test('will correctly reflect initialization status via isInitialized and reset state via reset()', () async {
+    test(
+        'will correctly reflect initialization status via isInitialized and reset state via reset()',
+        () async {
       SafeTextFilter.reset();
       expect(SafeTextFilter.isInitialized, false);
 
-      await SafeTextFilter.init(language: Language.english);
+      SafeTextFilter.init(language: Language.english);
       expect(SafeTextFilter.isInitialized, true);
 
       SafeTextFilter.reset();
