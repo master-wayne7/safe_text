@@ -1,5 +1,4 @@
 import 'package:safe_text/constants/badwords.dart';
-import 'package:safe_text/data/word_lists.dart';
 
 import 'aho_corasick.dart';
 import 'models/language.dart';
@@ -64,27 +63,19 @@ class SafeTextFilter {
     if (_trie == null) init();
   }
 
-  static List<String> _loadWords(
-      {Language? language, List<Language>? languages}) {
+  static List<String> _loadWords({
+    Language? language,
+    List<Language>? languages,
+  }) {
     final List<String> words = [];
-    final List<Language> targetLanguages = [];
 
     if (languages != null && languages.isNotEmpty) {
-      targetLanguages.addAll(languages);
+      for (var l in languages) {
+        words.addAll(l.words);
+      }
     } else {
       final lang = language ?? Language.english;
-      if (lang == Language.all) {
-        targetLanguages.addAll(Language.values.where((l) => l != Language.all));
-      } else {
-        targetLanguages.add(lang);
-      }
-    }
-
-    for (var l in targetLanguages) {
-      final list = kWordListsByFileCode[l.fileCode];
-      if (list != null) {
-        words.addAll(list);
-      }
+      words.addAll(lang.words);
     }
 
     if (words.isEmpty) {
