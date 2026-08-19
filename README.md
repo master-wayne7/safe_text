@@ -50,6 +50,7 @@ A high-performance pure Dart package for filtering offensive language (profanity
 - Detects phone numbers in digits, words, mixed formats, and multiplier words (e.g., "triple five").
 - Multiple masking strategies — full (`******`), partial (`f**k`), or custom replacement (`[censored]`).
 - Customizable — add your own words or exclude specific phrases.
+- No setup required — lazily auto-initializes with English on first use; `init` is optional.
 - Non-blocking — `PhoneNumberChecker` runs in a separate isolate via `Isolate.run`.
 - Works on Android, iOS, Web, macOS, Linux, and Windows.
 
@@ -84,7 +85,9 @@ dart pub get
 import 'package:safe_text/safe_text.dart';
 
 void main() async {
-  // Initialize once at app startup
+  // Optional: initialize once at app startup with a specific language.
+  // If you skip this, the filter lazily auto-initializes with English on
+  // first use.
   SafeTextFilter.init(language: Language.english);
 
   // Filter profanity (full masking — default)
@@ -123,7 +126,7 @@ void main() async {
 
 ### `SafeTextFilter.init`
 
-Must be called **once** before using `filterText` or `containsBadWord`. Builds the Aho-Corasick trie from the selected word list(s).
+**Optional.** Builds the Aho-Corasick trie from the selected word list(s). If you never call it, the filter lazily auto-initializes with `Language.english` on first use of `filterText` / `containsBadWord`. Call it explicitly when you want a specific language or combination.
 
 ```dart
 // Single language
@@ -145,14 +148,9 @@ SafeTextFilter.init(language: Language.all);
 
 ### `SafeTextFilter.isInitialized` & `SafeTextFilter.reset`
 
-Check initialization status or reset loaded word lists dynamically (e.g., when switching languages):
+Check initialization status or reset loaded word lists dynamically (e.g., when switching languages). Because `init` auto-initializes on first use, you generally don't need to guard calls with `isInitialized` — but it's available if you want to check, and `reset()` lets you reload with a different language:
 
 ```dart
-// Check if initialized
-if (!SafeTextFilter.isInitialized) {
-  SafeTextFilter.init(language: Language.english);
-}
-
 // Reset state to reload with a different language
 SafeTextFilter.reset();
 SafeTextFilter.init(language: Language.spanish);
@@ -378,7 +376,7 @@ The original `SafeText` class is still available but marked `@Deprecated`. It in
 
 | v1.x | v2.0.0 |
 |---|---|
-| `SafeTextFilter.init(...)` | Required — call once at startup |
+| `SafeTextFilter.init(...)` | Optional — auto-initializes with English on first use |
 | `SafeText.filterText(text: ...)` | `SafeTextFilter.filterText(text: ...)` |
 | `await SafeText.containsBadWord(text: ...)` | `SafeTextFilter.containsBadWord(text: ...)` |
 | `await SafeText.containsPhoneNumber(text: ...)` | `await PhoneNumberChecker.containsPhoneNumber(text: ...)` |
@@ -391,8 +389,8 @@ bool bad = await SafeText.containsBadWord(text: "some input");
 
 **After:**
 ```dart
-// v2.0.0 — init once, then use anywhere
-SafeTextFilter.init(language: Language.english); // once, e.g. in main()
+// v2.0.0 — init is optional; auto-initializes with English on first use
+SafeTextFilter.init(language: Language.english); // optional, e.g. for a specific language
 bool bad = SafeTextFilter.containsBadWord(text: "some input");
 ```
 
@@ -400,10 +398,8 @@ bool bad = SafeTextFilter.containsBadWord(text: "some input");
 
 ## Limitations
 
-- **`SafeTextFilter.init` must be called before use.** Calling `filterText` or `containsBadWord` before `init` will fall back to a small built-in word list without the full multilingual dataset.
 - **Phone number detection is English-word based.** Words like "nine", "triple", etc. are English only — the detector does not parse written numbers in other languages.
 - **False positives on technical terms.** Short words in the filter list may match substrings of unrelated technical terms. Use `excludedWords` to suppress known false positives.
-- **`Language.all` increases init time.** Loading all 75+ language files is I/O-heavy. For most apps a targeted language list is faster.
 
 ---
 

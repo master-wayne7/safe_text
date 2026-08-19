@@ -1,5 +1,5 @@
-import 'package:test/test.dart';
 import 'package:safe_text/safe_text.dart';
+import 'package:test/test.dart';
 
 void main() {
   group("SafeTextFilter class method filterText", () {
@@ -236,6 +236,17 @@ void main() {
       final filtered = SafeTextFilter.filterText(text: text);
 
       expect(filtered, "You are a * and a *");
+    });
+
+    test("auto-initializes with English on first use without explicit init",
+        () {
+      SafeTextFilter.reset();
+      expect(SafeTextFilter.isInitialized, false);
+
+      final filtered =
+          SafeTextFilter.filterText(text: "This is a badass sentence");
+      expect(filtered, contains("******"));
+      expect(SafeTextFilter.isInitialized, true);
     });
   });
 

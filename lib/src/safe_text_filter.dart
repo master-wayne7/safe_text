@@ -60,6 +60,10 @@ class SafeTextFilter {
     _isInitialized = true;
   }
 
+  static void _ensureInitialized() {
+    if (_trie == null) init();
+  }
+
   static List<String> _loadWords(
       {Language? language, List<Language>? languages}) {
     final List<String> words = [];
@@ -116,10 +120,13 @@ class SafeTextFilter {
   }) {
     if (text.isEmpty) return false;
 
+    if (useDefaultWords) {
+      _ensureInitialized();
+    }
+
     final normalizedRunes = _normalizeToRunes(text);
 
-    // Optimized sync check if initialized
-    if (_isInitialized && useDefaultWords) {
+    if (useDefaultWords) {
       final normalized = String.fromCharCodes(normalizedRunes);
       final matches = _trie!.search(normalized);
       for (final entry in matches.entries) {
@@ -132,13 +139,6 @@ class SafeTextFilter {
             return true;
           }
         }
-      }
-    } else if (useDefaultWords) {
-      // Fallback or legacy path
-      final normalized = String.fromCharCodes(normalizedRunes);
-      for (final word in badWords) {
-        if (excludedWords != null && excludedWords.contains(word)) continue;
-        if (_hasMatch(normalized, word)) return true;
       }
     }
 
@@ -217,7 +217,8 @@ class SafeTextFilter {
     final List<_Range> matchRanges = [];
 
     // Step 1: Collect match ranges
-    if (_isInitialized && useDefaultWords) {
+    if (useDefaultWords) {
+      _ensureInitialized();
       final normalized = String.fromCharCodes(normalizedRunes);
       final trieMatches = _trie!.search(normalized);
       trieMatches.forEach((endIndex, words) {
@@ -230,11 +231,6 @@ class SafeTextFilter {
           }
         }
       });
-    } else if (useDefaultWords) {
-      for (final word in badWords) {
-        if (excludedWords != null && excludedWords.contains(word)) continue;
-        _addMatchesForWord(normalizedRunes, word, matchRanges);
-      }
     }
 
     if (extraWords != null) {
