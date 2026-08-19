@@ -68,7 +68,7 @@ Or manually add it to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  safe_text: ^2.1.7
+  safe_text: ^3.0.0
 ```
 
 Then run:
