@@ -14,7 +14,7 @@
   <a href="https://pub.dev/packages/safe_text"><img src="https://img.shields.io/badge/platform-android%20%7C%20ios%20%7C%20web%20%7C%20macos%20%7C%20linux%20%7C%20windows-lightgrey" alt="platforms"></a>
 </p>
 
-A high-performance Flutter package for filtering offensive language (profanity) and detecting phone numbers. Powered by the **Aho-Corasick** algorithm for `O(N)` single-pass scanning across 80+ languages and 55,000+ curated words.
+A high-performance pure Dart package for filtering offensive language (profanity) and detecting phone numbers. Powered by the **Aho-Corasick** algorithm for `O(N)` single-pass scanning across 80+ languages and 55,000+ curated words.
 
 > 💙 Find SafeText useful? A [like on pub.dev](https://pub.dev/packages/safe_text) or [star on GitHub](https://github.com/master-wayne7/safe_text) helps others discover it.
 
@@ -30,7 +30,6 @@ A high-performance Flutter package for filtering offensive language (profanity) 
   - [`SafeTextFilter.init`](#safetextfilterinit)
   - [`SafeTextFilter.isInitialized` \& `SafeTextFilter.reset`](#safetextfilterisinitialized--safetextfilterreset)
   - [`SafeTextFilter.filterText`](#safetextfilterfiltertext)
-    - [Masking Strategies](#masking-strategies)
   - [`SafeTextFilter.containsBadWord`](#safetextfiltercontainsbadword)
   - [`PhoneNumberChecker.containsPhoneNumber`](#phonenumbercheckercontainsphonenumber)
 - [Supported Languages](#supported-languages)
@@ -51,30 +50,31 @@ A high-performance Flutter package for filtering offensive language (profanity) 
 - Detects phone numbers in digits, words, mixed formats, and multiplier words (e.g., "triple five").
 - Multiple masking strategies — full (`******`), partial (`f**k`), or custom replacement (`[censored]`).
 - Customizable — add your own words or exclude specific phrases.
-- Non-blocking — `PhoneNumberChecker` runs in a separate isolate via `compute`.
+- No setup required — lazily auto-initializes with English on first use; `init` is optional.
+- Non-blocking — `PhoneNumberChecker` runs in a separate isolate via `Isolate.run`.
 - Works on Android, iOS, Web, macOS, Linux, and Windows.
 
 ---
 
 ## Installation
 
-Add `safe_text` to your project using the Flutter CLI:
+Add `safe_text` to your project using the Dart CLI:
 
 ```bash
-flutter pub add safe_text
+dart pub add safe_text
 ```
 
 Or manually add it to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  safe_text: ^2.1.7
+  safe_text: ^3.0.0
 ```
 
 Then run:
 
 ```bash
-flutter pub get
+dart pub get
 ```
 
 ---
@@ -85,8 +85,10 @@ flutter pub get
 import 'package:safe_text/safe_text.dart';
 
 void main() async {
-  // Initialize once at app startup
-  await SafeTextFilter.init(language: Language.english);
+  // Optional: initialize once at app startup with a specific language.
+  // If you skip this, the filter lazily auto-initializes with English on
+  // first use.
+  SafeTextFilter.init(language: Language.english);
 
   // Filter profanity (full masking — default)
   final clean = SafeTextFilter.filterText(text: "What the f@ck!");
@@ -107,7 +109,7 @@ void main() async {
   print(custom); // "What the [censored]!"
 
   // Check for bad words
-  final hasBad = await SafeTextFilter.containsBadWord(text: "Some bad input");
+  final hasBad = SafeTextFilter.containsBadWord(text: "Some bad input");
   print(hasBad); // true or false
 
   // Detect phone numbers
@@ -124,17 +126,17 @@ void main() async {
 
 ### `SafeTextFilter.init`
 
-Must be called **once** before using `filterText` or `containsBadWord`. Builds the Aho-Corasick trie from the selected word list(s).
+**Optional.** Builds the Aho-Corasick trie from the selected word list(s). If you never call it, the filter lazily auto-initializes with `Language.english` on first use of `filterText` / `containsBadWord`. Call it explicitly when you want a specific language or combination.
 
 ```dart
 // Single language
-await SafeTextFilter.init(language: Language.english);
+SafeTextFilter.init(language: Language.english);
 
 // Custom combination
-await SafeTextFilter.init(languages: [Language.english, Language.hindi, Language.spanish]);
+SafeTextFilter.init(languages: [Language.english, Language.hindi, Language.spanish]);
 
 // All 75+ languages
-await SafeTextFilter.init(language: Language.all);
+SafeTextFilter.init(language: Language.all);
 ```
 
 | Parameter | Type | Default | Description |
@@ -146,17 +148,12 @@ await SafeTextFilter.init(language: Language.all);
 
 ### `SafeTextFilter.isInitialized` & `SafeTextFilter.reset`
 
-Check initialization status or reset loaded word lists dynamically (e.g., when switching languages):
+Check initialization status or reset loaded word lists dynamically (e.g., when switching languages). Because `init` auto-initializes on first use, you generally don't need to guard calls with `isInitialized` — but it's available if you want to check, and `reset()` lets you reload with a different language:
 
 ```dart
-// Check if initialized
-if (!SafeTextFilter.isInitialized) {
-  await SafeTextFilter.init(language: Language.english);
-}
-
 // Reset state to reload with a different language
 SafeTextFilter.reset();
-await SafeTextFilter.init(language: Language.spanish);
+SafeTextFilter.init(language: Language.spanish);
 ```
 
 ---
@@ -219,7 +216,7 @@ String custom = SafeTextFilter.filterText(
 Asynchronous. Returns `true` if the text contains at least one filtered word.
 
 ```dart
-bool hasBadWord = await SafeTextFilter.containsBadWord(
+bool hasBadWord = SafeTextFilter.containsBadWord(
   text: "Don't be a pendejo",
   extraWords: ["badterm"],   // optional
   excludedWords: ["pend"],   // optional
@@ -238,7 +235,7 @@ bool hasBadWord = await SafeTextFilter.containsBadWord(
 
 ### `PhoneNumberChecker.containsPhoneNumber`
 
-Asynchronous. Runs in a **separate isolate** via Flutter's `compute` function so it never blocks the UI thread.
+Asynchronous. Runs in a **separate isolate** via Dart's `Isolate.run` so it never blocks the calling thread.
 
 Detects phone numbers expressed as:
 - Pure digits: `9783444`
@@ -379,9 +376,9 @@ The original `SafeText` class is still available but marked `@Deprecated`. It in
 
 | v1.x | v2.0.0 |
 |---|---|
-| `await SafeTextFilter.init(...)` | Required — call once at startup |
+| `SafeTextFilter.init(...)` | Optional — auto-initializes with English on first use |
 | `SafeText.filterText(text: ...)` | `SafeTextFilter.filterText(text: ...)` |
-| `await SafeText.containsBadWord(text: ...)` | `await SafeTextFilter.containsBadWord(text: ...)` |
+| `await SafeText.containsBadWord(text: ...)` | `SafeTextFilter.containsBadWord(text: ...)` |
 | `await SafeText.containsPhoneNumber(text: ...)` | `await PhoneNumberChecker.containsPhoneNumber(text: ...)` |
 
 **Before:**
@@ -392,19 +389,17 @@ bool bad = await SafeText.containsBadWord(text: "some input");
 
 **After:**
 ```dart
-// v2.0.0 — init once, then use anywhere
-await SafeTextFilter.init(language: Language.english); // once, e.g. in main()
-bool bad = await SafeTextFilter.containsBadWord(text: "some input");
+// v2.0.0 — init is optional; auto-initializes with English on first use
+SafeTextFilter.init(language: Language.english); // optional, e.g. for a specific language
+bool bad = SafeTextFilter.containsBadWord(text: "some input");
 ```
 
 ---
 
 ## Limitations
 
-- **`SafeTextFilter.init` must be called before use.** Calling `filterText` or `containsBadWord` before `init` will fall back to a small built-in word list without the full multilingual dataset.
 - **Phone number detection is English-word based.** Words like "nine", "triple", etc. are English only — the detector does not parse written numbers in other languages.
 - **False positives on technical terms.** Short words in the filter list may match substrings of unrelated technical terms. Use `excludedWords` to suppress known false positives.
-- **`Language.all` increases init time.** Loading all 75+ language files is I/O-heavy. For most apps a targeted language list is faster.
 
 ---
 
@@ -417,8 +412,8 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for th
 3. Add tests for any new behaviour.
 4. Run checks before submitting:
    ```bash
-   flutter analyze
-   flutter test
+   dart analyze
+   dart test
    ```
 5. Open a pull request targeting `develop`. Ensure CI passes.
 

@@ -1,6 +1,6 @@
 name: safe_text
-description: A fast Flutter profanity & swear word filter with phone number detection, powered by Aho-Corasick. Supports 80+ languages and 55,000+ curated bad words.
-version: 2.1.7
+description: A fast Dart profanity & swear word filter with phone number detection, powered by Aho-Corasick. Supports 80+ languages and 55,000+ curated bad words.
+version: 3.0.0
 homepage: https://github.com/master-wayne7/safe_text
 repository: https://github.com/master-wayne7/safe_text
 issue_tracker: https://github.com/master-wayne7/safe_text/issues
@@ -9,30 +9,11 @@ changelog: https://github.com/master-wayne7/safe_text/blob/main/CHANGELOG.md
 
 environment:
   sdk: ">=3.3.0 <4.0.0"
-  flutter: ">=1.17.0"
-
-dependencies:
-  flutter:
-    sdk: flutter
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  flutter_lints: ^6.0.0
+  test: ^1.24.0
+  lints: ^4.0.0
 
-example: main.dart
-
-flutter:
-  assets:
-    - assets/data/
-
-platforms:
-  android:
-  ios:
-  linux:
-  macos:
-  web:
-  windows:
 funding:
   - https://www.buymeacoffee.com/ronitrameja
 

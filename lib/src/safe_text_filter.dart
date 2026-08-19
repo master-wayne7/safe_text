@@ -1,5 +1,3 @@
-import 'dart:async';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:safe_text/constants/badwords.dart';
 
 import 'aho_corasick.dart';
@@ -48,9 +46,8 @@ class SafeTextFilter {
   /// You can provide a single [language] or a list of [languages].
   /// If [languages] is provided, it takes precedence over [language].
   /// Defaults to [Language.english] if both are null.
-  static Future<void> init(
-      {Language? language, List<Language>? languages}) async {
-    final words = await _loadWords(language: language, languages: languages);
+  static void init({Language? language, List<Language>? languages}) {
+    final words = _loadWords(language: language, languages: languages);
 
     // Building the Trie locally is fast and avoids serialization overhead
     _trie = AhoCorasick();
@@ -62,50 +59,29 @@ class SafeTextFilter {
     _isInitialized = true;
   }
 
-  static Future<List<String>> _loadWords(
-      {Language? language, List<Language>? languages}) async {
-    List<String> words = [];
-    final List<Language> targetLanguages = [];
+  static void _ensureInitialized() {
+    if (_trie == null) init();
+  }
+
+  static List<String> _loadWords({
+    Language? language,
+    List<Language>? languages,
+  }) {
+    final List<String> words = [];
 
     if (languages != null && languages.isNotEmpty) {
-      targetLanguages.addAll(languages);
+      for (var l in languages) {
+        words.addAll(l.words);
+      }
     } else {
       final lang = language ?? Language.english;
-      if (lang == Language.all) {
-        targetLanguages.addAll(Language.values.where((l) => l != Language.all));
-      } else {
-        targetLanguages.add(lang);
-      }
-    }
-
-    List<Future<String>> futures = [];
-    for (var l in targetLanguages) {
-      futures.add(
-          _safeLoadAsset('packages/safe_text/assets/data/${l.fileCode}.txt'));
-    }
-
-    final results = await Future.wait(futures);
-    for (var content in results) {
-      if (content.isNotEmpty) {
-        words.addAll(content
-            .split('\n')
-            .map((e) => e.trim())
-            .where((e) => e.isNotEmpty));
-      }
+      words.addAll(lang.words);
     }
 
     if (words.isEmpty) {
       words.addAll(badWords);
     }
     return words.toSet().toList();
-  }
-
-  static Future<String> _safeLoadAsset(String path) async {
-    try {
-      return await rootBundle.loadString(path);
-    } catch (e) {
-      return '';
-    }
   }
 
   /// Normalizes text by replacing leet-speak with standard alphabets.
@@ -127,18 +103,21 @@ class SafeTextFilter {
   }
 
   /// Static method to check if a string contains any bad words.
-  static Future<bool> containsBadWord({
+  static bool containsBadWord({
     required String text,
     List<String>? extraWords,
     List<String>? excludedWords,
     bool useDefaultWords = true,
-  }) async {
+  }) {
     if (text.isEmpty) return false;
+
+    if (useDefaultWords) {
+      _ensureInitialized();
+    }
 
     final normalizedRunes = _normalizeToRunes(text);
 
-    // Optimized sync check if initialized
-    if (_isInitialized && useDefaultWords) {
+    if (useDefaultWords) {
       final normalized = String.fromCharCodes(normalizedRunes);
       final matches = _trie!.search(normalized);
       for (final entry in matches.entries) {
@@ -151,13 +130,6 @@ class SafeTextFilter {
             return true;
           }
         }
-      }
-    } else if (useDefaultWords) {
-      // Fallback or legacy path
-      final normalized = String.fromCharCodes(normalizedRunes);
-      for (final word in badWords) {
-        if (excludedWords != null && excludedWords.contains(word)) continue;
-        if (_hasMatch(normalized, word)) return true;
       }
     }
 
@@ -236,7 +208,8 @@ class SafeTextFilter {
     final List<_Range> matchRanges = [];
 
     // Step 1: Collect match ranges
-    if (_isInitialized && useDefaultWords) {
+    if (useDefaultWords) {
+      _ensureInitialized();
       final normalized = String.fromCharCodes(normalizedRunes);
       final trieMatches = _trie!.search(normalized);
       trieMatches.forEach((endIndex, words) {
@@ -249,11 +222,6 @@ class SafeTextFilter {
           }
         }
       });
-    } else if (useDefaultWords) {
-      for (final word in badWords) {
-        if (excludedWords != null && excludedWords.contains(word)) continue;
-        _addMatchesForWord(normalizedRunes, word, matchRanges);
-      }
     }
 
     if (extraWords != null) {

@@ -1,3 +1,16 @@
+## 3.0.0
+
+- **Converted from a Flutter package to a pure Dart package.** The `flutter` SDK dependency has been removed; `safe_text` now works in any Dart project (native, web, server, CLI) with no Flutter requirement.
+- **`SafeTextFilter.init` is now synchronous** (`void` instead of `Future<void>`). Remove the `await` from existing call sites:
+  ```dart
+  // Before (2.x)
+  await SafeTextFilter.init(language: Language.english);
+  // After (3.0.0)
+  SafeTextFilter.init(language: Language.english);
+  ```
+- **`SafeTextFilter.containsBadWord` is now synchronous** (`bool` instead of `Future<bool>`). Remove the `await` from existing call sites.
+- **Lazy auto-initialization.** `SafeTextFilter.init` is now optional — if you never call it, the filter lazily initializes with `Language.english` on first use (`filterText` / `containsBadWord`). Explicit `init(language: ...)` still takes precedence when you need a specific language.
+
 ## 2.1.7
 
 ### Added
