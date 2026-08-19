@@ -14,7 +14,7 @@
   <a href="https://pub.dev/packages/safe_text"><img src="https://img.shields.io/badge/platform-android%20%7C%20ios%20%7C%20web%20%7C%20macos%20%7C%20linux%20%7C%20windows-lightgrey" alt="platforms"></a>
 </p>
 
-A high-performance Flutter package for filtering offensive language (profanity) and detecting phone numbers. Powered by the **Aho-Corasick** algorithm for `O(N)` single-pass scanning across 80+ languages and 55,000+ curated words.
+A high-performance pure Dart package for filtering offensive language (profanity) and detecting phone numbers. Powered by the **Aho-Corasick** algorithm for `O(N)` single-pass scanning across 80+ languages and 55,000+ curated words.
 
 > 💙 Find SafeText useful? A [like on pub.dev](https://pub.dev/packages/safe_text) or [star on GitHub](https://github.com/master-wayne7/safe_text) helps others discover it.
 
@@ -50,17 +50,17 @@ A high-performance Flutter package for filtering offensive language (profanity) 
 - Detects phone numbers in digits, words, mixed formats, and multiplier words (e.g., "triple five").
 - Multiple masking strategies — full (`******`), partial (`f**k`), or custom replacement (`[censored]`).
 - Customizable — add your own words or exclude specific phrases.
-- Non-blocking — `PhoneNumberChecker` runs in a separate isolate via `compute`.
+- Non-blocking — `PhoneNumberChecker` runs in a separate isolate via `Isolate.run`.
 - Works on Android, iOS, Web, macOS, Linux, and Windows.
 
 ---
 
 ## Installation
 
-Add `safe_text` to your project using the Flutter CLI:
+Add `safe_text` to your project using the Dart CLI:
 
 ```bash
-flutter pub add safe_text
+dart pub add safe_text
 ```
 
 Or manually add it to your `pubspec.yaml`:
@@ -73,7 +73,7 @@ dependencies:
 Then run:
 
 ```bash
-flutter pub get
+dart pub get
 ```
 
 ---
@@ -237,7 +237,7 @@ bool hasBadWord = SafeTextFilter.containsBadWord(
 
 ### `PhoneNumberChecker.containsPhoneNumber`
 
-Asynchronous. Runs in a **separate isolate** via Flutter's `compute` function so it never blocks the UI thread.
+Asynchronous. Runs in a **separate isolate** via Dart's `Isolate.run` so it never blocks the calling thread.
 
 Detects phone numbers expressed as:
 - Pure digits: `9783444`
@@ -416,8 +416,8 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for th
 3. Add tests for any new behaviour.
 4. Run checks before submitting:
    ```bash
-   flutter analyze
-   flutter test
+   dart analyze
+   dart test
    ```
 5. Open a pull request targeting `develop`. Ensure CI passes.
 

@@ -1,10 +1,7 @@
-import 'package:flutter/foundation.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:test/test.dart';
 import 'package:safe_text/safe_text.dart';
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
-
   group("SafeTextFilter class method filterText", () {
     setUpAll(() {
       // For unit tests, we bypass the isolate Trie initialization and mock asset loading.
@@ -268,12 +265,12 @@ void main() {
       stopwatchAC.stop();
       final acTime = stopwatchAC.elapsedMilliseconds;
 
-      debugPrint("\n--- BENCHMARK RESULTS ---");
-      debugPrint("Legacy Loop Time (100 iterations): ${legacyTime}ms");
-      debugPrint("Aho-Corasick Time (100 iterations): ${acTime}ms");
-      debugPrint(
+      print("\n--- BENCHMARK RESULTS ---");
+      print("Legacy Loop Time (100 iterations): ${legacyTime}ms");
+      print("Aho-Corasick Time (100 iterations): ${acTime}ms");
+      print(
           "Speedup: ${(legacyTime / (acTime == 0 ? 1 : acTime)).toStringAsFixed(2)}x");
-      debugPrint("--------------------------\n");
+      print("--------------------------\n");
 
       expect(acTime, lessThanOrEqualTo(legacyTime),
           reason: "Aho-Corasick should be faster or equal for large patterns");
@@ -337,13 +334,13 @@ void main() {
       stopwatchAC.stop();
       final acTime = stopwatchAC.elapsedMilliseconds;
 
-      debugPrint("\n--- ADVANCED MULTI-LANG BENCHMARK ---");
-      debugPrint("Input Size: ${longLongInput.length} characters");
-      debugPrint("Fallback Loop Time (10 iterations): ${fallbackTime}ms");
-      debugPrint("Aho-Corasick Time (10 iterations): ${acTime}ms");
-      debugPrint(
+      print("\n--- ADVANCED MULTI-LANG BENCHMARK ---");
+      print("Input Size: ${longLongInput.length} characters");
+      print("Fallback Loop Time (10 iterations): ${fallbackTime}ms");
+      print("Aho-Corasick Time (10 iterations): ${acTime}ms");
+      print(
           "Actual Speedup: ${(fallbackTime / (acTime == 0 ? 1 : acTime)).toStringAsFixed(2)}x");
-      debugPrint("------------------------------------\n");
+      print("------------------------------------\n");
 
       expect(acTime, isNotNull);
     });

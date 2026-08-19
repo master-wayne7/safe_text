@@ -1,12 +1,9 @@
-import 'package:flutter/foundation.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:safe_text/constants/badwords.dart';
 import 'package:safe_text/src/models/language.dart';
 import 'package:safe_text/src/safe_text_filter.dart';
+import 'package:test/test.dart';
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
-
   group('Language Data Integrity Tests', () {
     test('Kannada data moved to kn.txt and is reachable', () async {
       SafeTextFilter.init(languages: [Language.kannada]);
@@ -58,13 +55,13 @@ void main() {
     });
 
     test('Czech neutral words are removed', () async {
-      debugPrint(
+      print(
           'DEBUG: badWords contains bodnutí: ${badWords.contains('bodnutí')}');
-      debugPrint('DEBUG: badWords length: ${badWords.length}');
+      print('DEBUG: badWords length: ${badWords.length}');
       SafeTextFilter.init(languages: [Language.czech]);
       final isBad = SafeTextFilter.containsBadWord(text: 'bodnutí');
       final filtered = SafeTextFilter.filterText(text: 'bodnutí');
-      debugPrint('DEBUG: Czech bodnutí: isBad=$isBad, filtered=$filtered');
+      print('DEBUG: Czech bodnutí: isBad=$isBad, filtered=$filtered');
       expect(isBad, false);
       expect(SafeTextFilter.containsBadWord(text: 'děloha'), false);
       expect(SafeTextFilter.containsBadWord(text: 'knoflík'), false);
