@@ -50,7 +50,7 @@ A high-performance pure Dart package for filtering offensive language (profanity
 - Detects phone numbers in digits, words, mixed formats, and multiplier words (e.g., "triple five").
 - Multiple masking strategies — full (`******`), partial (`f**k`), or custom replacement (`[censored]`).
 - Customizable — add your own words or exclude specific phrases.
-- No setup required — lazily auto-initializes with English on first use; `init` is optional.
+- No setup required — lazily auto-initializes with the full `Language.english` word list (~13k words) on first use; `init` is optional.
 - Non-blocking — `PhoneNumberChecker` runs in a separate isolate via `Isolate.run`.
 - Works on Android, iOS, Web, macOS, Linux, and Windows.
 
@@ -86,8 +86,9 @@ import 'package:safe_text/safe_text.dart';
 
 void main() async {
   // Optional: initialize once at app startup with a specific language.
-  // If you skip this, the filter lazily auto-initializes with English on
-  // first use.
+  // If you skip this, the filter lazily auto-initializes with the full
+  // Language.english word list (lib/data/en.dart, ~13k words) on first use —
+  // not the small legacy constants/badwords.dart list from v1.x/v2.x.
   SafeTextFilter.init(language: Language.english);
 
   // Filter profanity (full masking — default)
@@ -126,7 +127,9 @@ void main() async {
 
 ### `SafeTextFilter.init`
 
-**Optional.** Builds the Aho-Corasick trie from the selected word list(s). If you never call it, the filter lazily auto-initializes with `Language.english` on first use of `filterText` / `containsBadWord`. Call it explicitly when you want a specific language or combination.
+**Optional.** Builds the Aho-Corasick trie from the selected word list(s). If you never call it, the filter lazily auto-initializes with `Language.english` (`lib/data/en.dart`, ~13k words) on first use of `filterText` / `containsBadWord`. Call it explicitly when you want a specific language or combination.
+
+> **Upgrading from v2.x?** In 2.x, an app that never called `init` fell back to the small legacy list in `constants/badwords.dart` (~1.7k words). As of 3.0.0, an uninitialized filter now lazily loads the full `Language.english` list instead — a much larger, different word list. If your app relied on the old, smaller list (e.g. `"adult"` was previously not flagged), see [below](#keeping-the-legacy-word-list) for how to opt back into it.
 
 ```dart
 // Single language
@@ -230,6 +233,20 @@ bool hasBadWord = SafeTextFilter.containsBadWord(
 | `extraWords` | `List<String>?` | `null` | Additional words to check against. |
 | `excludedWords` | `List<String>?` | `null` | Words to ignore even if matched. |
 | `useDefaultWords` | `bool` | `true` | Include the built-in word list in the check. |
+
+#### Keeping the legacy word list
+
+If your app depends on the smaller v1.x/v2.x fallback list (`constants/badwords.dart`, ~1.7k words) instead of the full `Language.english` list (~13k words) that 3.0.0 lazily auto-initializes with, opt out of the default list and pass the legacy one in explicitly:
+
+```dart
+import 'package:safe_text/constants/badwords.dart';
+
+bool hasBadWord = SafeTextFilter.containsBadWord(
+  text: text,
+  useDefaultWords: false,
+  extraWords: badWords, // the legacy list from constants/badwords.dart
+);
+```
 
 ---
 
@@ -376,7 +393,7 @@ The original `SafeText` class is still available but marked `@Deprecated`. It in
 
 | v1.x | v2.0.0 |
 |---|---|
-| `SafeTextFilter.init(...)` | Optional — auto-initializes with English on first use |
+| `SafeTextFilter.init(...)` | Recommended — call once at startup. If skipped, `containsBadWord`/`filterText` fall back to the small legacy `constants/badwords.dart` list (~1.7k words) instead of the full multilingual dataset. |
 | `SafeText.filterText(text: ...)` | `SafeTextFilter.filterText(text: ...)` |
 | `await SafeText.containsBadWord(text: ...)` | `SafeTextFilter.containsBadWord(text: ...)` |
 | `await SafeText.containsPhoneNumber(text: ...)` | `await PhoneNumberChecker.containsPhoneNumber(text: ...)` |
@@ -389,15 +406,18 @@ bool bad = await SafeText.containsBadWord(text: "some input");
 
 **After:**
 ```dart
-// v2.0.0 — init is optional; auto-initializes with English on first use
-SafeTextFilter.init(language: Language.english); // optional, e.g. for a specific language
+// v2.0.0 — init once, then use anywhere
+SafeTextFilter.init(language: Language.english); // once, e.g. in main()
 bool bad = SafeTextFilter.containsBadWord(text: "some input");
 ```
+
+> **3.0.0 changed this again:** `init` became fully optional. If you never call it, the filter now lazily auto-initializes with the *full* `Language.english` list (~13k words) — not the small legacy list above. See [Keeping the legacy word list](#keeping-the-legacy-word-list) if you're upgrading from 2.x and relied on the smaller fallback.
 
 ---
 
 ## Limitations
 
+- **Skipping `init` is not behavior-preserving across major versions.** An uninitialized filter now lazily loads the full `Language.english` list (~13k words); in 2.x, an uninitialized filter fell back to the small legacy `constants/badwords.dart` list (~1.7k words) instead. If you're upgrading from 2.x, see [Keeping the legacy word list](#keeping-the-legacy-word-list).
 - **Phone number detection is English-word based.** Words like "nine", "triple", etc. are English only — the detector does not parse written numbers in other languages.
 - **False positives on technical terms.** Short words in the filter list may match substrings of unrelated technical terms. Use `excludedWords` to suppress known false positives.
 

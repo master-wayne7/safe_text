@@ -10,6 +10,7 @@
   ```
 - **`SafeTextFilter.containsBadWord` is now synchronous** (`bool` instead of `Future<bool>`). Remove the `await` from existing call sites.
 - **Lazy auto-initialization.** `SafeTextFilter.init` is now optional — if you never call it, the filter lazily initializes with `Language.english` on first use (`filterText` / `containsBadWord`). Explicit `init(language: ...)` still takes precedence when you need a specific language.
+  - **Breaking behavior change for callers upgrading from 2.x who never called `init`:** in 2.x, an uninitialized filter fell back to the small built-in `constants/badwords.dart` list (~1.7k words). As of 3.0.0, an uninitialized filter instead lazily loads the full `Language.english` list (~13k words) — a different, much larger word list (e.g. `"adult"` now matches, where it previously did not). If you depended on the smaller 2.x fallback, pass `useDefaultWords: false` and `extraWords: badWords` (from `package:safe_text/constants/badwords.dart`) explicitly.
 
 ## 2.1.7
 
