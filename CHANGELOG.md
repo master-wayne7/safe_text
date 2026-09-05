@@ -1,3 +1,12 @@
+## 3.0.1
+
+### Documentation
+- Clarified that 3.0.0's lazy auto-initialization loads the full `Language.english` word list (`lib/data/en.dart`, ~13k words) on first use — not the small legacy `constants/badwords.dart` list (~1.7k words) that 2.x fell back to when `init` was never called. This is a real behavior difference for apps upgrading from 2.x without calling `init` (e.g. `"adult"` now matches, where it previously did not).
+- Corrected the "Migrating from v1.x" table, which incorrectly attributed the optional/lazy-init behavior to v2.0.0 instead of 3.0.0.
+- Added a "Keeping the legacy word list" section to the README showing how to opt back into the old `constants/badwords.dart` list via `useDefaultWords: false` + `extraWords: badWords`.
+
+Thanks to [@ecolab-neil](https://github.com/ecolab-neil) for reporting this in [#52](https://github.com/master-wayne7/safe_text/issues/52).
+
 ## 3.0.0
 
 - **Converted from a Flutter package to a pure Dart package.** The `flutter` SDK dependency has been removed; `safe_text` now works in any Dart project (native, web, server, CLI) with no Flutter requirement.
@@ -10,7 +19,6 @@
   ```
 - **`SafeTextFilter.containsBadWord` is now synchronous** (`bool` instead of `Future<bool>`). Remove the `await` from existing call sites.
 - **Lazy auto-initialization.** `SafeTextFilter.init` is now optional — if you never call it, the filter lazily initializes with `Language.english` on first use (`filterText` / `containsBadWord`). Explicit `init(language: ...)` still takes precedence when you need a specific language.
-  - **Breaking behavior change for callers upgrading from 2.x who never called `init`:** in 2.x, an uninitialized filter fell back to the small built-in `constants/badwords.dart` list (~1.7k words). As of 3.0.0, an uninitialized filter instead lazily loads the full `Language.english` list (~13k words) — a different, much larger word list (e.g. `"adult"` now matches, where it previously did not). If you depended on the smaller 2.x fallback, pass `useDefaultWords: false` and `extraWords: badWords` (from `package:safe_text/constants/badwords.dart`) explicitly.
 
 ## 2.1.7
 
