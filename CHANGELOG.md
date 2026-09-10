@@ -1,3 +1,15 @@
+## 3.0.2
+
+### Data
+- **English dataset cleanup**: Removed 331 false positives from `lib/data/en.dart` — everyday, non-abusive words incorrectly flagged as profanity, including:
+  - Ordinary common words (`cool`, `sad`, `mad`, `ugly`, `crazy`, `naked`, `vibe`, `style`)
+  - Classic "Scunthorpe problem" substring matches — real words that merely contain a bad substring (`cockpit`, `cockatoo`, `cockroach`, `shuttlecock`, `niggle`/`niggardly`, `sparse`/`coarse`/`hoarse`, `cummings`, `rehearse`, `scunthorpe` itself)
+  - Clinical/anatomical terms (`urea`, `uterus`, `urinal`, `vasectomy`, `placenta`, `spermatozoa`)
+  - Brand and place names (`adidas`, `budweiser`, `kmart`, `tampax`, `burma`, `canadian`, `hitchcock`)
+  - Neutral identity/demographic terms (`lgbt`, `lgbtq`, `pansexual`, `cisgender`, `latina`, `latinx`)
+
+Thanks to [@ChrisMICDUP](https://github.com/ChrisMICDUP) for reporting this in [#45](https://github.com/master-wayne7/safe_text/issues/45).
+
 ## 3.0.1
 
 ### Documentation
