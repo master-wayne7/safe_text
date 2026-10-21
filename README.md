@@ -51,7 +51,7 @@ A high-performance pure Dart package for filtering offensive language (profanity
 - Multiple masking strategies — full (`******`), partial (`f**k`), or custom replacement (`[censored]`).
 - Customizable — add your own words or exclude specific phrases.
 - No setup required — lazily auto-initializes with the full `Language.english` word list (~13k words) on first use; `init` is optional.
-- Non-blocking — `PhoneNumberChecker` runs in a separate isolate via `Isolate.run`.
+- Fast — a short message filters in ~10µs, and a phone check on even an ~87k-character text takes ~2ms, so everything is safe to call on the UI thread.
 - Works on Android, iOS, Web, macOS, Linux, and Windows.
 
 ---
@@ -68,7 +68,7 @@ Or manually add it to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  safe_text: ^3.0.0
+  safe_text: ^3.1.0
 ```
 
 Then run:
@@ -194,7 +194,7 @@ String custom = SafeTextFilter.filterText(
 |---|---|---|---|
 | `text` | `String` | **required** | The input string to process. |
 | `extraWords` | `List<String>?` | `null` | Additional words to filter on top of (or instead of) the built-in list. |
-| `excludedWords` | `List<String>?` | `null` | Words that must never be filtered, even if they appear in the list. |
+| `excludedWords` | `List<String>?` | `null` | Words that must never be filtered, even if they appear in the list. Case-insensitive, and also covers leet-speak spellings (excluding `badass` also allows `b4dass`). |
 | `useDefaultWords` | `bool` | `true` | Include the built-in language word list. Set to `false` to use only `extraWords`. |
 | `strategy` | `MaskStrategy?` | `null` (defaults to `MaskStrategy.full()`) | Masking strategy. See [Masking Strategies](#masking-strategies) below. |
 | `fullMode` | `bool` | `true` | **Deprecated.** Use `strategy` instead. `true` maps to `MaskStrategy.full()`, `false` maps to `MaskStrategy.partial()`. |
@@ -216,7 +216,7 @@ String custom = SafeTextFilter.filterText(
 
 ### `SafeTextFilter.containsBadWord`
 
-Asynchronous. Returns `true` if the text contains at least one filtered word.
+Synchronous. Returns `true` if the text contains at least one filtered word.
 
 ```dart
 bool hasBadWord = SafeTextFilter.containsBadWord(
@@ -231,7 +231,7 @@ bool hasBadWord = SafeTextFilter.containsBadWord(
 |---|---|---|---|
 | `text` | `String` | **required** | The input string to check. |
 | `extraWords` | `List<String>?` | `null` | Additional words to check against. |
-| `excludedWords` | `List<String>?` | `null` | Words to ignore even if matched. |
+| `excludedWords` | `List<String>?` | `null` | Words to ignore even if matched. Case-insensitive. |
 | `useDefaultWords` | `bool` | `true` | Include the built-in word list in the check. |
 
 #### Keeping the legacy word list
@@ -252,13 +252,16 @@ bool hasBadWord = SafeTextFilter.containsBadWord(
 
 ### `PhoneNumberChecker.containsPhoneNumber`
 
-Asynchronous. Runs in a **separate isolate** via Dart's `Isolate.run` so it never blocks the calling thread.
+Returns a `Future<bool>`. The check runs on the calling thread on every platform, including web. It is a single linear scan (~2µs for a chat message, ~2ms for ~87k characters), so it won't drop frames.
 
 Detects phone numbers expressed as:
 - Pure digits: `9783444`
+- Separated digits: `978-344-4444`, `(978) 344 4444`, `+1 978.344.4444`
 - Word-based: `nine seven eight three four four four`
 - Mixed: `9 seven 8 3444`
 - Multiplier words: `nine seven eight three triple four`
+
+Only numbers that appear next to each other are combined: any other word ends the current number. So `"I have 3 cats, 4 dogs, born 2019"` is **not** a phone number, while `"call 9876543210 or 9123456780"` is.
 
 Supported multiplier words: `double`, `triple`, `quadruple`, `quintuple`, `sextuple`, `septuple`, `octuple`, `nonuple`, `decuple`.
 
@@ -384,6 +387,8 @@ Pass any of these `Language` enum values to `SafeTextFilter.init`. Use `Language
 Input text  ──► [Normalizer] ──► [Aho-Corasick FSA] ──► Match ranges ──► [StringBuffer] ──► Filtered text
                   (leet-speak)     (single O(N) pass)    (merged)         (single-pass)
 ```
+
+Leet-speak normalization only applies to plain-letter entries, so `f@ck` and `fvck` match `fuck`. Entries that themselves contain digits or symbols (e.g. `2g1c`, or Arabizi words like `3ars` where digits stand for Arabic letters) are matched exactly as written in a second, smaller trie, so they never turn ordinary words like `ears` into matches.
 
 ---
 
