@@ -1,3 +1,36 @@
+## 3.1.0
+
+### Fixed
+- **~1,400 English entries could never match.** The input text was normalized (e.g. `v`→`u`, `1`→`i`, `@`→`a`) but the word list was not, so any entry containing one of those characters (`vagina`, `pervert`, `2g1c`, …) was silently skipped. Such entries are now kept in a separate trie and matched exactly as written. They are deliberately *not* normalized: many are Arabizi or similar spellings where digits stand for letters, and normalizing them would have turned `3ars`/`@unt` into false positives on `ears`/`aunt`.
+- **`excludedWords` is now case-insensitive** and also covers leet-speak spellings. `excludedWords: ['BadAss']` previously had no effect; excluding `badass` now also allows `b4dass`.
+- **`extraWords` containing `v`, digits or symbols now match** (e.g. `vodka`, `b@nana`). Previously they could never match.
+- The "same word in `extraWords` and `excludedWords`" assertion is now case-insensitive.
+- **`PhoneNumberChecker.containsPhoneNumber` no longer adds up every digit in the text.** It now only combines numbers that appear next to each other, and any other word ends the current number. This fixes:
+  - false positives on sentences with unrelated numbers (`"I have 3 cats, 4 dogs, born 2019, flat 12"`);
+  - missed detections when a message contained more than one phone number (`"call 9876543210 or 9123456780"` exceeded `maxLength` and returned `false`).
+  Separated formats like `987-654-3210`, `(987) 654-3210` and `+91 98765 43210` are supported.
+- **`PhoneNumberChecker.containsPhoneNumber` now works on the web.** It previously threw `Unsupported operation` because it used `Isolate.run`, which is unavailable on the web.
+
+### Performance
+Measured with the new `benchmark/safe_text_benchmark.dart` (AOT, median of 7 rounds):
+
+| | 3.0.2 | 3.1.0 |
+|---|---|---|
+| `init(language: Language.all)` | 6.9 s | ~0.2 s |
+| `init(language: Language.english)` | 239 ms | 35 ms |
+| `filterText`, short message | 17 µs | 9 µs |
+| `containsBadWord`, short message | 15 µs | 8 µs |
+| `filterText`, 17k characters | 4.9 ms | 2.8 ms |
+| `containsPhoneNumber`, short message | ~100 µs | ~1 µs |
+
+- Trie construction is now linear (it used `List.removeAt(0)` as a queue, which was quadratic) and uses dictionary suffix links instead of copying match lists into every node.
+- Matching works directly on the already-prepared characters instead of converting and lowercasing the text again, and word-boundary checks have an ASCII fast path.
+- `containsPhoneNumber` now runs on the calling thread instead of spawning an isolate on each call (spawning alone cost ~85 µs). It uses a hand-written tokenizer and takes ~2 ms even on ~87k characters, well within a frame. It still returns a `Future<bool>`, so no call sites need to change.
+
+### Behavior changes
+- A dataset word containing `v` is no longer matched when written with `u` instead (e.g. `uagina`). Leet substitutions of plain-letter words (`fvck`, `f@ck`) are still caught.
+- `containsPhoneNumber` may return `false` for text that previously only "matched" because unrelated numbers were added together.
+
 ## 3.0.2
 
 ### Data

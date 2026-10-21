@@ -12,12 +12,16 @@ class TrieNode {
   /// Set on all non-root nodes by [AhoCorasick.buildFailureLinks].
   TrieNode? fail;
 
-  /// Patterns that terminate at this node.
+  /// The pattern that terminates at this node, if any.
+  String? word;
+
+  /// Dictionary suffix link — the nearest node reachable via [fail] links
+  /// that terminates a pattern, or `null` if there is none.
   ///
-  /// After [AhoCorasick.buildFailureLinks] is called, this list also includes
-  /// patterns inherited from nodes reachable via [fail] links (the "dictionary
-  /// suffix links" of the classic algorithm).
-  final List<String> outputs = [];
+  /// Set by [AhoCorasick.buildFailureLinks]. Following this chain yields every
+  /// pattern that ends at the current position without copying output lists
+  /// into each node.
+  TrieNode? output;
 }
 
 /// An implementation of the Aho-Corasick multi-pattern string search algorithm.
@@ -58,7 +62,7 @@ class AhoCorasick {
     for (final rune in codeUnits) {
       current = current.children.putIfAbsent(rune, () => TrieNode());
     }
-    current.outputs.add(word.toLowerCase());
+    current.word = word.toLowerCase();
   }
 
   /// Constructs failure links for all nodes in the trie using a BFS traversal.
@@ -79,8 +83,10 @@ class AhoCorasick {
       queue.add(child);
     }
 
-    while (queue.isNotEmpty) {
-      final current = queue.removeAt(0);
+    // Walk the queue by index: removeAt(0) would shift the whole list on
+    // every step, making construction quadratic in the number of nodes.
+    for (int head = 0; head < queue.length; head++) {
+      final current = queue[head];
 
       current.children.forEach((rune, child) {
         queue.add(child);
@@ -90,14 +96,9 @@ class AhoCorasick {
           failNode = failNode.fail;
         }
 
-        if (failNode == null) {
-          child.fail = _root;
-        } else {
-          child.fail = failNode.children[rune];
-          if (child.fail != null) {
-            child.outputs.addAll(child.fail!.outputs);
-          }
-        }
+        final fail = failNode?.children[rune] ?? _root;
+        child.fail = fail;
+        child.output = fail.word != null ? fail : fail.output;
       });
     }
   }
@@ -125,28 +126,32 @@ class AhoCorasick {
   /// ```
   ///
   /// Returns an empty map if no patterns match.
-  Map<int, List<String>> search(String text) {
+  Map<int, List<String>> search(String text) =>
+      searchRunes(text.toLowerCase().runes.toList());
+
+  /// Same as [search], but takes already-lowercased Unicode code points and
+  /// returns rune (not UTF-16) end indices. Avoids re-lowercasing and
+  /// re-decoding text that the caller has already prepared.
+  Map<int, List<String>> searchRunes(List<int> runes) {
     final matches = <int, List<String>>{};
-    TrieNode? current = _root;
-    final textLower = text.toLowerCase();
-    final units = textLower.runes.toList();
+    TrieNode current = _root;
 
-    for (int i = 0; i < units.length; i++) {
-      final rune = units[i];
+    for (int i = 0; i < runes.length; i++) {
+      final rune = runes[i];
 
-      while (current != null && !current.children.containsKey(rune)) {
-        current = current.fail;
+      TrieNode? next = current.children[rune];
+      while (next == null && current != _root) {
+        current = current.fail!;
+        next = current.children[rune];
       }
+      if (next == null) continue; // still at root, no transition
 
-      if (current == null) {
-        current = _root;
-        continue;
-      }
+      current = next;
 
-      current = current.children[rune]!;
-
-      if (current.outputs.isNotEmpty) {
-        matches.putIfAbsent(i, () => []).addAll(current.outputs);
+      for (TrieNode? node = current.word != null ? current : current.output;
+          node != null;
+          node = node.output) {
+        matches.putIfAbsent(i, () => []).add(node.word!);
       }
     }
 

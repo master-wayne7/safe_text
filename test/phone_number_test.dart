@@ -183,6 +183,49 @@ void main() {
       );
     });
 
+    test('detects a phone number when the text contains two phone numbers',
+        () async {
+      expect(
+        await PhoneNumberChecker.containsPhoneNumber(
+            text: "call me 9876543210 or 9123456780"),
+        true,
+      );
+    });
+
+    test('does not combine unrelated numbers spread across a sentence',
+        () async {
+      expect(
+        await PhoneNumberChecker.containsPhoneNumber(
+            text: "I have 3 cats, 4 dogs, born 2019, flat 12"),
+        false,
+      );
+      expect(
+        await PhoneNumberChecker.containsPhoneNumber(
+            text: "I was born in 1990 and I am 34 years old with 2 kids"),
+        false,
+      );
+    });
+
+    test('detects common separator formats', () async {
+      for (final text in [
+        "call 987-654-3210",
+        "call (987) 654-3210",
+        "call 987.654.3210",
+        "call +91 98765 43210",
+      ]) {
+        expect(await PhoneNumberChecker.containsPhoneNumber(text: text), true,
+            reason: text);
+      }
+    });
+
+    test('detects a phone number surrounded by other numbers', () async {
+      expect(
+        await PhoneNumberChecker.containsPhoneNumber(
+            text: "order 12 of 3 items, call 9876543210 before 5"),
+        true,
+      );
+    });
+
     test('will return valid if multiplier word without following number',
         () async {
       String textWithOnlyMultiplier = "I said double but no number after";

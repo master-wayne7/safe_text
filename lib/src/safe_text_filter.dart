@@ -6,7 +6,16 @@ import 'models/mask_strategy.dart';
 
 /// Core filter class that uses Aho-Corasick trie for efficient searching
 class SafeTextFilter {
+  /// Entries without leet-speak characters, searched against normalized text
+  /// so that obfuscated variants (e.g. `f@ck`, `fvck`) are caught.
   static AhoCorasick? _trie;
+
+  /// Entries that contain leet-speak characters (e.g. `vagina`, `2g1c`),
+  /// searched against lowercased text so they only match as written.
+  /// Normalizing these instead would turn entries like the Arabizi `3ars`
+  /// into ordinary words (`ears`).
+  static AhoCorasick? _literalTrie;
+
   static bool _isInitialized = false;
 
   /// Whether [SafeTextFilter] has been initialized via [init].
@@ -16,6 +25,7 @@ class SafeTextFilter {
   /// word lists. Useful when dynamically switching languages or freeing memory.
   static void reset() {
     _trie = null;
+    _literalTrie = null;
     _isInitialized = false;
   }
 
@@ -50,11 +60,14 @@ class SafeTextFilter {
     final words = _loadWords(language: language, languages: languages);
 
     // Building the Trie locally is fast and avoids serialization overhead
-    _trie = AhoCorasick();
+    final trie = AhoCorasick();
+    final literalTrie = AhoCorasick();
     for (var word in words) {
-      _trie!.addWord(word);
+      final lower = word.toLowerCase();
+      (_hasMappedChar(lower.runes) ? literalTrie : trie).addWord(lower);
     }
-    _trie!.buildFailureLinks();
+    _trie = trie..buildFailureLinks();
+    _literalTrie = literalTrie..buildFailureLinks();
 
     _isInitialized = true;
   }
@@ -91,8 +104,12 @@ class SafeTextFilter {
     return String.fromCharCodes(runes);
   }
 
-  static List<int> _normalizeToRunes(String text) {
-    final runes = text.toLowerCase().runes.toList();
+  static List<int> _normalizeToRunes(String text) =>
+      _normalizeRunes(text.toLowerCase().runes.toList());
+
+  /// Returns a copy of [lowerRunes] with leet-speak characters replaced.
+  static List<int> _normalizeRunes(List<int> lowerRunes) {
+    final runes = List<int>.of(lowerRunes);
     for (int i = 0; i < runes.length; i++) {
       final replacement = _normalizationMap[runes[i]];
       if (replacement != null) {
@@ -101,6 +118,9 @@ class SafeTextFilter {
     }
     return runes;
   }
+
+  static bool _hasMappedChar(Iterable<int> runes) =>
+      runes.any(_normalizationMap.containsKey);
 
   /// Static method to check if a string contains any bad words.
   static bool containsBadWord({
@@ -111,59 +131,70 @@ class SafeTextFilter {
   }) {
     if (text.isEmpty) return false;
 
-    if (useDefaultWords) {
-      _ensureInitialized();
-    }
-
-    final normalizedRunes = _normalizeToRunes(text);
-
-    if (useDefaultWords) {
-      final normalized = String.fromCharCodes(normalizedRunes);
-      final matches = _trie!.search(normalized);
-      for (final entry in matches.entries) {
-        final endIndex = entry.key;
-        for (final word in entry.value) {
-          if (excludedWords != null && excludedWords.contains(word)) continue;
-          final wordRuneLength = word.runes.length;
-          if (_isWordBoundary(
-              normalizedRunes, endIndex - wordRuneLength + 1, endIndex + 1)) {
-            return true;
-          }
-        }
-      }
-    }
-
-    if (extraWords != null) {
-      final normalized = String.fromCharCodes(normalizedRunes);
-      for (final word in extraWords) {
-        if (excludedWords != null && excludedWords.contains(word)) continue;
-        if (_hasMatch(normalized, word)) return true;
-      }
-    }
-
-    return false;
+    return _collectMatches(
+      text,
+      extraWords: extraWords,
+      excludedWords: excludedWords,
+      useDefaultWords: useDefaultWords,
+    ).isNotEmpty;
   }
 
-  static bool _hasMatch(String normalizedText, String word) {
-    final wordLower = word.toLowerCase();
-    final normalizedRunes = normalizedText.runes.toList();
-    final wordRunes = wordLower.runes.toList();
+  /// Finds the rune ranges of every bad word in [text].
+  ///
+  /// Words without leet-speak characters are matched against the normalized
+  /// text; words containing them are matched literally against the lowercased
+  /// text (see [_literalTrie]).
+  static List<_Range> _collectMatches(
+    String text, {
+    List<String>? extraWords,
+    List<String>? excludedWords,
+    required bool useDefaultWords,
+  }) {
+    final lowerRunes = text.toLowerCase().runes.toList();
+    final normalizedRunes = _normalizeRunes(lowerRunes);
+    final hasMapped = _hasMappedChar(lowerRunes);
+    final matchRanges = <_Range>[];
 
-    // Simple pattern matching on runes
-    for (int i = 0; i <= normalizedRunes.length - wordRunes.length; i++) {
-      bool match = true;
-      for (int j = 0; j < wordRunes.length; j++) {
-        if (normalizedRunes[i + j] != wordRunes[j]) {
-          match = false;
-          break;
-        }
-      }
+    final excludedNormalized = {
+      for (final word in excludedWords ?? const <String>[]) normalizeText(word)
+    };
+    final excludedLiteral = {
+      for (final word in excludedWords ?? const <String>[]) word.toLowerCase()
+    };
 
-      if (match && _isWordBoundary(normalizedRunes, i, i + wordRunes.length)) {
-        return true;
+    if (useDefaultWords) {
+      _ensureInitialized();
+      _addTrieMatches(_trie!, normalizedRunes, excludedNormalized, matchRanges);
+      if (hasMapped) {
+        _addTrieMatches(
+            _literalTrie!, lowerRunes, excludedLiteral, matchRanges);
       }
     }
-    return false;
+
+    for (final word in extraWords ?? const <String>[]) {
+      final lower = word.toLowerCase();
+      if (!_hasMappedChar(lower.runes)) {
+        if (excludedNormalized.contains(lower)) continue;
+        _addMatchesForWord(normalizedRunes, lower, matchRanges);
+      } else if (hasMapped && !excludedLiteral.contains(lower)) {
+        _addMatchesForWord(lowerRunes, lower, matchRanges);
+      }
+    }
+
+    return matchRanges;
+  }
+
+  static void _addTrieMatches(AhoCorasick trie, List<int> runes,
+      Set<String> excluded, List<_Range> matches) {
+    trie.searchRunes(runes).forEach((endIndex, words) {
+      for (final word in words) {
+        if (excluded.contains(word)) continue;
+        final startIndex = endIndex - word.runes.length + 1;
+        if (_isWordBoundary(runes, startIndex, endIndex + 1)) {
+          matches.add(_Range(startIndex, endIndex + 1));
+        }
+      }
+    });
   }
 
   /// This method will filter out the bad words from your provided [string].
@@ -183,14 +214,10 @@ class SafeTextFilter {
       assert(false, "extraWords can't be null for usingDefaultWords = false");
     }
 
-    if (extraWords != null && excludedWords != null) {
-      for (final word in extraWords) {
-        if (excludedWords.contains(word)) {
-          assert(
-              false, "Can't have same words in excludedWords and extraWords");
-        }
-      }
-    }
+    assert(() {
+      final excluded = {for (final w in excludedWords ?? []) w.toLowerCase()};
+      return !(extraWords ?? []).any((w) => excluded.contains(w.toLowerCase()));
+    }(), "Can't have same words in excludedWords and extraWords");
 
     // Derive the effective masking strategy. When the caller passes an explicit
     // [strategy] it takes precedence. Otherwise fall back to the legacy
@@ -204,32 +231,14 @@ class SafeTextFilter {
     if (text.isEmpty) return text;
 
     final textRunes = text.runes.toList();
-    final normalizedRunes = _normalizeToRunes(text);
-    final List<_Range> matchRanges = [];
 
     // Step 1: Collect match ranges
-    if (useDefaultWords) {
-      _ensureInitialized();
-      final normalized = String.fromCharCodes(normalizedRunes);
-      final trieMatches = _trie!.search(normalized);
-      trieMatches.forEach((endIndex, words) {
-        for (final word in words) {
-          if (excludedWords != null && excludedWords.contains(word)) continue;
-          final wordRuneLength = word.runes.length;
-          final startIndex = endIndex - wordRuneLength + 1;
-          if (_isWordBoundary(normalizedRunes, startIndex, endIndex + 1)) {
-            matchRanges.add(_Range(startIndex, endIndex + 1));
-          }
-        }
-      });
-    }
-
-    if (extraWords != null) {
-      for (final word in extraWords) {
-        if (excludedWords != null && excludedWords.contains(word)) continue;
-        _addMatchesForWord(normalizedRunes, word, matchRanges);
-      }
-    }
+    final matchRanges = _collectMatches(
+      text,
+      extraWords: extraWords,
+      excludedWords: excludedWords,
+      useDefaultWords: useDefaultWords,
+    );
 
     if (matchRanges.isEmpty) return text;
 
@@ -296,14 +305,14 @@ class SafeTextFilter {
   }
 
   static void _addMatchesForWord(
-      List<int> normalizedRunes, String word, List<_Range> matches) {
-    final wordRunes = word.toLowerCase().runes.toList();
+      List<int> runes, String lowerWord, List<_Range> matches) {
+    final wordRunes = lowerWord.runes.toList();
     if (wordRunes.isEmpty) return;
 
-    for (int i = 0; i <= normalizedRunes.length - wordRunes.length; i++) {
+    for (int i = 0; i <= runes.length - wordRunes.length; i++) {
       bool match = true;
       for (int j = 0; j < wordRunes.length; j++) {
-        if (normalizedRunes[i + j] != wordRunes[j]) {
+        if (runes[i + j] != wordRunes[j]) {
           match = false;
           break;
         }
@@ -311,7 +320,7 @@ class SafeTextFilter {
 
       if (match) {
         final endIndex = i + wordRunes.length;
-        if (_isWordBoundary(normalizedRunes, i, endIndex)) {
+        if (_isWordBoundary(runes, i, endIndex)) {
           matches.add(_Range(i, endIndex));
         }
       }
@@ -331,6 +340,12 @@ class SafeTextFilter {
   }
 
   static bool _isAlphanumeric(int rune) {
+    // ASCII fast path; the regex is only needed for other scripts.
+    if (rune < 0x80) {
+      return (rune >= 0x30 && rune <= 0x39) || // 0-9
+          (rune >= 0x41 && rune <= 0x5A) || // A-Z
+          (rune >= 0x61 && rune <= 0x7A); // a-z
+    }
     return _unicodeLetterOrDigit.hasMatch(String.fromCharCode(rune));
   }
 }
