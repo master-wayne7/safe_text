@@ -1,3 +1,4 @@
+import 'package:safe_text/constants/badwords.dart';
 import 'package:safe_text/safe_text.dart';
 import 'package:test/test.dart';
 
@@ -250,35 +251,113 @@ void main() {
     });
   });
 
+  group("Normalization consistency", () {
+    setUpAll(() => SafeTextFilter.init(language: Language.english));
+
+    test("matches dataset words containing 'v' (normalized to 'u')", () {
+      expect(SafeTextFilter.filterText(text: "you vagina"), "you ******");
+      expect(SafeTextFilter.filterText(text: "a pervert"), "a *******");
+      expect(SafeTextFilter.containsBadWord(text: "VAGINA"), true);
+    });
+
+    test("still catches 'v' used as a leet substitute for 'u'", () {
+      expect(SafeTextFilter.filterText(text: "fvck"), "****");
+    });
+
+    test("matches dataset words that contain leet characters", () {
+      expect(
+          SafeTextFilter.filterText(text: "watch 2g1c now"), "watch **** now");
+      expect(SafeTextFilter.containsBadWord(text: "10tacle"), true);
+    });
+
+    test("leet-character entries do not match their normalized plain form", () {
+      // Dataset entries like the Arabizi '3ars' and '@unt' must not turn
+      // ordinary words into matches.
+      for (final word in ["ears", "aunt", "tuck", "emu", "sara", "uagina"]) {
+        expect(SafeTextFilter.containsBadWord(text: "my $word"), false,
+            reason: word);
+      }
+    });
+
+    test("excludedWords is case-insensitive", () {
+      expect(
+          SafeTextFilter.filterText(
+              text: "Hello badass", excludedWords: ["BadAss"]),
+          "Hello badass");
+      expect(
+          SafeTextFilter.containsBadWord(
+              text: "Hello badass", excludedWords: ["BADASS"]),
+          false);
+    });
+
+    test("excludedWords applies to leet-speak variants of the word", () {
+      expect(
+          SafeTextFilter.filterText(
+              text: "Hello b4dass", excludedWords: ["badass"]),
+          "Hello b4dass");
+    });
+
+    test("excludedWords excludes dataset words containing 'v'", () {
+      expect(
+          SafeTextFilter.filterText(
+              text: "a pervert", excludedWords: ["pervert"]),
+          "a pervert");
+    });
+
+    test("extraWords containing 'v' or leet characters are matched", () {
+      expect(
+          SafeTextFilter.filterText(
+              text: "more vodka please",
+              useDefaultWords: false,
+              extraWords: ["vodka"]),
+          "more ***** please");
+      expect(
+          SafeTextFilter.containsBadWord(
+              text: "a b@nana", useDefaultWords: false, extraWords: ["b@nana"]),
+          true);
+    });
+
+    test("asserts when extraWords and excludedWords differ only by case", () {
+      expect(
+          () => SafeTextFilter.filterText(
+              text: "foo",
+              useDefaultWords: false,
+              extraWords: ["foo"],
+              excludedWords: ["FOO"]),
+          throwsA(isA<AssertionError>()));
+    });
+  });
+
   group("Performance Benchmark (Aho-Corasick vs Legacy Loop)", () {
     test("Benchmarks performance with 1700+ patterns", () async {
       final longInput =
           "This is a long sentence with some bad words like badass, anal impaler, and maybe another badass for good measure. " *
               50;
 
-      // 1. Measure Legacy Loop (not initialized)
+      // 1. Measure the legacy linear scan: each of the ~1700 legacy words is
+      // matched individually via extraWords, bypassing the Trie.
       final stopwatchLegacy = Stopwatch()..start();
-      for (int i = 0; i < 100; i++) {
-        SafeTextFilter.filterText(text: longInput);
+      for (int i = 0; i < 5; i++) {
+        SafeTextFilter.filterText(
+            text: longInput, useDefaultWords: false, extraWords: badWords);
       }
       stopwatchLegacy.stop();
       final legacyTime = stopwatchLegacy.elapsedMilliseconds;
 
-      // 2. Initialize Aho-Corasick (this builds the Trie)
-      // Note: We ignore asset errors by catching them in init fallback to badWords
+      // 2. Build the Aho-Corasick Trie up front so init time isn't measured
       SafeTextFilter.init(language: Language.english);
 
-      // 3. Measure Aho-Corasick Loop
+      // 3. Measure Aho-Corasick Loop (full ~13k English list)
       final stopwatchAC = Stopwatch()..start();
-      for (int i = 0; i < 100; i++) {
+      for (int i = 0; i < 5; i++) {
         SafeTextFilter.filterText(text: longInput);
       }
       stopwatchAC.stop();
       final acTime = stopwatchAC.elapsedMilliseconds;
 
       print("\n--- BENCHMARK RESULTS ---");
-      print("Legacy Loop Time (100 iterations): ${legacyTime}ms");
-      print("Aho-Corasick Time (100 iterations): ${acTime}ms");
+      print("Legacy Loop Time (5 iterations): ${legacyTime}ms");
+      print("Aho-Corasick Time (5 iterations): ${acTime}ms");
       print(
           "Speedup: ${(legacyTime / (acTime == 0 ? 1 : acTime)).toStringAsFixed(2)}x");
       print("--------------------------\n");
