@@ -1,3 +1,13 @@
+## 3.1.1
+
+### Fixed
+- **Everyday words no longer count as profanity.** The English list carried chat abbreviations and fragments that are ordinary words, matched as whole words, so a normal sentence was flagged. 77 such entries are removed:
+  - single letters `b`, `c`, `f`, `g` and short fragments such as `ah`, `ha`, `lo`, `el`, `pc`, `rs`, `th`;
+  - common Hinglish words that were in the English list: `mai`, `ka`, `ya`, `ho`, `hun`, `sab`, `kia`, `pas`, `saa`, and `goli`, `kari` from the Hindi list;
+  - plain English words: `post`, `pair`, `fish`, `beat`, `pot`, `sub`, `com`, `con`, `prob`, `pros`, `tom`, `trap`, `stud`, and abbreviations like `omg`, `lmao`, `gf`.
+
+  Insults and profanity are unchanged. A test now checks that English and Hinglish sentences pass with `Language.english` and `Language.hindi` loaded.
+
 ## 3.1.0
 
 ### Fixed
