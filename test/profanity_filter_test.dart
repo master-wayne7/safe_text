@@ -448,4 +448,49 @@ void main() {
       expect(SafeTextFilter.isInitialized, false);
     });
   });
+
+  group("Everyday words are not flagged (English + Hindi)", () {
+    setUpAll(() {
+      SafeTextFilter.reset();
+      SafeTextFilter.init(languages: [Language.english, Language.hindi]);
+    });
+
+    tearDownAll(SafeTextFilter.reset);
+
+    test('Hinglish sentences pass', () {
+      for (final text in [
+        'Main jaisa hun waisa accept karo, sab ke saath ho.',
+        'Kia aap mere saath chai pe chaloge? Ya phir coffee.',
+        'Mai ghar pe hun, abhi aa raha hun.',
+        'Ka haal hai? Sab theek, pas hi hun.',
+      ]) {
+        expect(SafeTextFilter.containsBadWord(text: text), isFalse,
+            reason: text);
+      }
+    });
+
+    test('English sentences and single letters pass', () {
+      for (final text in [
+        'I post pics of fish curry and beat my brother at carrom.',
+        'Looking for a pair of shoes, a pot of tea and a good sub.',
+        'Options a, b, c and f are fine; g is not. lol omg',
+        'My pros and cons list for the trip to tom\'s place.',
+      ]) {
+        expect(SafeTextFilter.containsBadWord(text: text), isFalse,
+            reason: text);
+      }
+    });
+
+    test('profanity is still caught', () {
+      for (final text in [
+        'what the fuck',
+        'tu chutiya hai',
+        'you are a bitch',
+        'shit happens',
+      ]) {
+        expect(SafeTextFilter.containsBadWord(text: text), isTrue,
+            reason: text);
+      }
+    });
+  });
 }
